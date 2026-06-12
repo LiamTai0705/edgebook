@@ -1302,6 +1302,13 @@ function init(){
   el('syncPushBtn').addEventListener('click',()=>syncPush(false));
   el('syncPullBtn').addEventListener('click',()=>syncPull(false));
   if(SYNC.auto&&SYNC.token)setTimeout(()=>syncPull(true),800);
+  /* 切回前景時自動檢查雲端(最短間隔 60 秒) */
+  let lastAutoPull=Date.now();
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'&&SYNC.auto&&SYNC.token&&Date.now()-lastAutoPull>60000){
+      lastAutoPull=Date.now();syncPull(true);
+    }
+  });
   /* 填充篩選選單 */
   fillSelect('fSym',Object.keys(DB.settings.symbols),'全部商品');
   fillSelect('fSetup',DB.settings.setups,'全部策略');
