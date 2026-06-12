@@ -489,6 +489,21 @@ table.tbl{width:100%;border-collapse:collapse}
             </div>
           </div>
           <div class="panel">
+            <div class="panel-head"><span class="panel-title">雲端同步</span><span class="panel-hint">GitHub Gist · 免費</span></div>
+            <div class="panel-body">
+              <label class="fl">GitHub Token(需 gist 權限)</label>
+              <input type="password" id="syncToken" style="width:100%;margin-bottom:11px" placeholder="ghp_… 或 github_pat_…" autocomplete="off">
+              <label class="fl">Gist ID(第一次上傳自動產生,其他裝置按「立即下載」會自動找到)</label>
+              <input type="text" id="syncGist" style="width:100%;margin-bottom:11px" placeholder="自動">
+              <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:.86rem;cursor:pointer"><input type="checkbox" id="syncAuto" style="accent-color:var(--brand)">自動同步(開啟 App 時下載最新、修改後自動上傳)</label>
+              <div style="display:flex;gap:8px">
+                <button class="btn" id="syncPushBtn" style="flex:1">立即上傳 ↑</button>
+                <button class="btn" id="syncPullBtn" style="flex:1">立即下載 ↓</button>
+              </div>
+              <div class="muted-sm" id="syncStatus" style="margin-top:10px;line-height:1.6"></div>
+            </div>
+          </div>
+          <div class="panel">
             <div class="panel-head"><span class="panel-title">資料管理</span></div>
             <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
               <button class="btn" id="exportJsonBtn">備份全部資料 (JSON)</button>
@@ -580,9 +595,68 @@ function loadDB(){
   if(!DB.settings.setups)DB.settings.setups=DEFAULTS.setups.slice();
   if(!DB.settings.mistakes)DB.settings.mistakes=DEFAULTS.mistakes.slice();
 }
-function saveDB(){
+function saveDB(keepStamp){
+  if(!keepStamp)DB.updatedAt=Date.now();
   try{localStorage.setItem(LS_KEY,JSON.stringify(DB));}catch(e){memStore=DB;}
   el('footCount').textContent=DB.trades.length+' 筆交易紀錄';
+  if(!keepStamp)schedulePush();
+}
+/* ═════════════════════ 雲端同步 (GitHub Gist) ═════════════════════ */
+const SYNC_KEY='edgebook.sync', GIST_FILE='edgebook-data.json';
+let SYNC={token:'',gistId:'',auto:true,last:0}, pushTimer=null;
+function loadSync(){try{const r=localStorage.getItem(SYNC_KEY);if(r)SYNC=Object.assign(SYNC,JSON.parse(r));}catch(e){}}
+function saveSync(){try{localStorage.setItem(SYNC_KEY,JSON.stringify(SYNC));}catch(e){}}
+async function gistReq(method,url,body){
+  const res=await fetch(url,{method,headers:{'Authorization':'Bearer '+SYNC.token.trim(),'Accept':'application/vnd.github+json'},body:body?JSON.stringify(body):undefined});
+  if(!res.ok)throw new Error(res.status===401?'Token 無效或權限不足':res.status===404?'找不到 Gist':'HTTP '+res.status);
+  return res.json();
+}
+async function syncPush(silent){
+  if(!SYNC.token){if(!silent)toast('請先填入 GitHub Token','err');return;}
+  try{
+    const payload={description:'EdgeBook 交易日誌同步資料',files:{[GIST_FILE]:{content:JSON.stringify(DB)}}};
+    let g;
+    if(SYNC.gistId){g=await gistReq('PATCH','https://api.github.com/gists/'+SYNC.gistId,payload);}
+    else{payload.public=false;g=await gistReq('POST','https://api.github.com/gists',payload);SYNC.gistId=g.id;}
+    SYNC.last=Date.now();saveSync();renderSyncStatus();
+    if(!silent)toast('已上傳到雲端');
+  }catch(e){toast('上傳失敗:'+e.message,'err');}
+}
+async function findGist(){
+  const list=await gistReq('GET','https://api.github.com/gists?per_page=100');
+  const hit=list.find(g=>g.files&&g.files[GIST_FILE]);
+  if(hit){SYNC.gistId=hit.id;saveSync();return true;}
+  return false;
+}
+async function syncPull(silent){
+  if(!SYNC.token){if(!silent)toast('請先填入 GitHub Token','err');return;}
+  try{
+    if(!SYNC.gistId&&!(await findGist())){if(!silent)toast('雲端還沒有資料,請先在另一台裝置上傳','err');return;}
+    const g=await gistReq('GET','https://api.github.com/gists/'+SYNC.gistId);
+    const f=g.files[GIST_FILE];
+    if(!f){if(!silent)toast('雲端沒有資料','err');return;}
+    let content=f.content;
+    if(f.truncated)content=await (await fetch(f.raw_url)).text();
+    const remote=JSON.parse(content);
+    if(!remote.trades||!remote.settings)throw new Error('資料格式錯誤');
+    if((remote.updatedAt||0)>(DB.updatedAt||0)){
+      DB=remote;saveDB(true);refreshAll();
+      toast(silent?'已自動同步雲端資料':'已從雲端更新('+remote.trades.length+' 筆交易)');
+    }else if((DB.updatedAt||0)>(remote.updatedAt||0)){
+      if(SYNC.auto)syncPush(true);
+      if(!silent)toast('本機較新,已改為上傳');
+    }else if(!silent)toast('資料已是最新');
+    SYNC.last=Date.now();saveSync();renderSyncStatus();
+  }catch(e){toast('下載失敗:'+e.message,'err');}
+}
+function schedulePush(){
+  if(!SYNC.auto||!SYNC.token)return;
+  clearTimeout(pushTimer);pushTimer=setTimeout(()=>syncPush(true),3000);
+}
+function renderSyncStatus(){
+  const elS=el('syncStatus');if(!elS)return;
+  const t=SYNC.last?new Date(SYNC.last).toLocaleString('zh-TW',{hour12:false}):'尚未同步';
+  elS.innerHTML=(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+'<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
 }
 /* ── helpers ── */
 const el=id=>document.getElementById(id);
@@ -1114,6 +1188,10 @@ function saveJournal(){
 
 /* ═════════════════════ 設定 / 匯出入 ═════════════════════ */
 function renderSettings(){
+  el('syncToken').value=SYNC.token;
+  el('syncGist').value=SYNC.gistId;
+  el('syncAuto').checked=!!SYNC.auto;
+  renderSyncStatus();
   el('setCapital').value=DB.settings.capital;
   el('setFee').value=DB.settings.fee;
   el('setSymbols').innerHTML=Object.entries(DB.settings.symbols).map(([k,v])=>
@@ -1157,7 +1235,7 @@ const App={
   clearDemo(){if(!confirm('清除全部範例交易與日誌?'))return;DB.trades=[];DB.journal=[];DB.demo=false;saveDB();refreshAll();toast('已清除範例資料,開始記錄你的第一筆交易吧');}
 };
 function init(){
-  loadDB();
+  loadDB();loadSync();
   if(!DB.trades.length&&!DB.seeded){
     const demo=genDemo();DB.trades=demo.trades;DB.journal=demo.journal;DB.demo=true;DB.seeded=true;
   }
@@ -1212,6 +1290,13 @@ function init(){
     DB={settings:JSON.parse(JSON.stringify(DEFAULTS)),trades:[],journal:[],demo:false,seeded:true};
     saveDB();refreshAll();toast('已清除全部資料');
   });
+  /* 雲端同步 */
+  el('syncToken').addEventListener('change',()=>{SYNC.token=el('syncToken').value.trim();saveSync();renderSyncStatus();});
+  el('syncGist').addEventListener('change',()=>{SYNC.gistId=el('syncGist').value.trim();saveSync();renderSyncStatus();});
+  el('syncAuto').addEventListener('change',()=>{SYNC.auto=el('syncAuto').checked;saveSync();});
+  el('syncPushBtn').addEventListener('click',()=>syncPush(false));
+  el('syncPullBtn').addEventListener('click',()=>syncPull(false));
+  if(SYNC.auto&&SYNC.token)setTimeout(()=>syncPull(true),800);
   /* 填充篩選選單 */
   fillSelect('fSym',Object.keys(DB.settings.symbols),'全部商品');
   fillSelect('fSetup',DB.settings.setups,'全部策略');
