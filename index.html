@@ -607,12 +607,15 @@ let SYNC={token:'',gistId:'',auto:true,last:0}, pushTimer=null;
 function loadSync(){try{const r=localStorage.getItem(SYNC_KEY);if(r)SYNC=Object.assign(SYNC,JSON.parse(r));}catch(e){}}
 function saveSync(){try{localStorage.setItem(SYNC_KEY,JSON.stringify(SYNC));}catch(e){}}
 async function gistReq(method,url,body){
-  const res=await fetch(url,{method,headers:{'Authorization':'Bearer '+SYNC.token.trim(),'Accept':'application/vnd.github+json'},body:body?JSON.stringify(body):undefined});
+  const tk=SYNC.token.replace(/[^\x21-\x7e]/g,'');
+  if(!tk)throw new Error('Token 為空或含非法字元,請重新貼上');
+  const res=await fetch(url,{method,headers:{'Authorization':'Bearer '+tk,'Accept':'application/vnd.github+json'},body:body?JSON.stringify(body):undefined});
   if(!res.ok)throw new Error(res.status===401?'Token 無效或權限不足':res.status===404?'找不到 Gist':'HTTP '+res.status);
   return res.json();
 }
 async function syncPush(silent){
   if(!SYNC.token){if(!silent)toast('請先填入 GitHub Token','err');return;}
+  if(DB.demo){if(!silent)toast('目前是範例資料,不會上傳。請先清除範例或記錄真實交易','err');return;}
   try{
     const payload={description:'EdgeBook 交易日誌同步資料',files:{[GIST_FILE]:{content:JSON.stringify(DB)}}};
     let g;
@@ -639,10 +642,12 @@ async function syncPull(silent){
     if(f.truncated)content=await (await fetch(f.raw_url)).text();
     const remote=JSON.parse(content);
     if(!remote.trades||!remote.settings)throw new Error('資料格式錯誤');
-    if((remote.updatedAt||0)>(DB.updatedAt||0)){
+    const localStamp=DB.demo?0:(DB.updatedAt||0);
+    const remoteStamp=remote.demo?0:(remote.updatedAt||0);
+    if(remoteStamp>localStamp){
       DB=remote;saveDB(true);refreshAll();
       toast(silent?'已自動同步雲端資料':'已從雲端更新('+remote.trades.length+' 筆交易)');
-    }else if((DB.updatedAt||0)>(remote.updatedAt||0)){
+    }else if(localStamp>remoteStamp){
       if(SYNC.auto)syncPush(true);
       if(!silent)toast('本機較新,已改為上傳');
     }else if(!silent)toast('資料已是最新');
@@ -650,7 +655,7 @@ async function syncPull(silent){
   }catch(e){toast('下載失敗:'+e.message,'err');}
 }
 function schedulePush(){
-  if(!SYNC.auto||!SYNC.token)return;
+  if(!SYNC.auto||!SYNC.token||DB.demo)return;
   clearTimeout(pushTimer);pushTimer=setTimeout(()=>syncPush(true),3000);
 }
 function renderSyncStatus(){
@@ -1291,8 +1296,8 @@ function init(){
     saveDB();refreshAll();toast('已清除全部資料');
   });
   /* 雲端同步 */
-  el('syncToken').addEventListener('change',()=>{SYNC.token=el('syncToken').value.trim();saveSync();renderSyncStatus();});
-  el('syncGist').addEventListener('change',()=>{SYNC.gistId=el('syncGist').value.trim();saveSync();renderSyncStatus();});
+  el('syncToken').addEventListener('change',()=>{SYNC.token=el('syncToken').value.replace(/[^\x21-\x7e]/g,'');el('syncToken').value=SYNC.token;saveSync();renderSyncStatus();});
+  el('syncGist').addEventListener('change',()=>{SYNC.gistId=el('syncGist').value.replace(/[^0-9a-f]/gi,'');el('syncGist').value=SYNC.gistId;saveSync();renderSyncStatus();});
   el('syncAuto').addEventListener('change',()=>{SYNC.auto=el('syncAuto').checked;saveSync();});
   el('syncPushBtn').addEventListener('click',()=>syncPush(false));
   el('syncPullBtn').addEventListener('click',()=>syncPull(false));
