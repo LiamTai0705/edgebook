@@ -1222,7 +1222,7 @@ function exportCsv(){
 function refreshAll(){
   const active=(document.querySelector('.nav-item.active')||document.querySelector('.bnav-item.active')).dataset.view;
   ({dashboard:renderDashboard,calendar:renderCalendar,trades:renderTrades,analytics:renderAnalytics,journal:renderJournal,settings:renderSettings})[active]();
-  saveDB();
+  saveDB(true);
 }
 
 /* ═════════════════════ App 控制 ═════════════════════ */
@@ -1237,14 +1237,14 @@ const App={
     refreshAll();
   },
   delJournal(id){if(!confirm('刪除這篇日誌?'))return;DB.journal=DB.journal.filter(j=>j.id!==id);saveDB();renderJournal();toast('已刪除日誌');},
-  clearDemo(){if(!confirm('清除全部範例交易與日誌?'))return;DB.trades=[];DB.journal=[];DB.demo=false;saveDB();refreshAll();toast('已清除範例資料,開始記錄你的第一筆交易吧');}
+  clearDemo(){if(!confirm('清除全部範例交易與日誌?'))return;DB.trades=[];DB.journal=[];DB.demo=false;DB.updatedAt=0;saveDB(true);refreshAll();toast('已清除範例資料,開始記錄你的第一筆交易吧');}
 };
 function init(){
   loadDB();loadSync();
   if(!DB.trades.length&&!DB.seeded){
     const demo=genDemo();DB.trades=demo.trades;DB.journal=demo.journal;DB.demo=true;DB.seeded=true;
   }
-  saveDB();
+  saveDB(true);
   /* nav */
   document.querySelectorAll('.nav-item,.bnav-item').forEach(n=>n.addEventListener('click',()=>App.go(n.dataset.view)));
   el('rangeSel').addEventListener('change',refreshAll);
@@ -1292,8 +1292,8 @@ function init(){
   });
   el('wipeBtn').addEventListener('click',()=>{
     if(!confirm('確定清除全部交易、日誌與設定?此動作無法復原。'))return;
-    DB={settings:JSON.parse(JSON.stringify(DEFAULTS)),trades:[],journal:[],demo:false,seeded:true};
-    saveDB();refreshAll();toast('已清除全部資料');
+    DB={settings:JSON.parse(JSON.stringify(DEFAULTS)),trades:[],journal:[],demo:false,seeded:true,updatedAt:0};
+    saveDB(true);refreshAll();toast('已清除全部資料');
   });
   /* 雲端同步 */
   el('syncToken').addEventListener('change',()=>{SYNC.token=el('syncToken').value.replace(/[^\x21-\x7e]/g,'');el('syncToken').value=SYNC.token;saveSync();renderSyncStatus();});
