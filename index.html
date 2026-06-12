@@ -610,7 +610,12 @@ async function gistReq(method,url,body){
   const tk=SYNC.token.replace(/[^\x21-\x7e]/g,'');
   if(!tk)throw new Error('Token 為空或含非法字元,請重新貼上');
   const res=await fetch(url,{method,headers:{'Authorization':'Bearer '+tk,'Accept':'application/vnd.github+json'},body:body?JSON.stringify(body):undefined});
-  if(!res.ok)throw new Error(res.status===401?'Token 無效或權限不足':res.status===404?'找不到 Gist':'HTTP '+res.status);
+  if(!res.ok){
+    let msg='HTTP '+res.status;
+    try{const j=await res.json();if(j&&j.message)msg=res.status+' '+j.message;}catch(e){}
+    if(res.status===401)msg='Token 無效('+msg+')';
+    const err=new Error(msg);err.status=res.status;throw err;
+  }
   return res.json();
 }
 async function syncPush(silent){
@@ -619,7 +624,15 @@ async function syncPush(silent){
   try{
     const payload={description:'EdgeBook 交易日誌同步資料',files:{[GIST_FILE]:{content:JSON.stringify(DB)}}};
     let g;
-    if(SYNC.gistId){g=await gistReq('PATCH','https://api.github.com/gists/'+SYNC.gistId,payload);}
+    if(SYNC.gistId){
+      try{g=await gistReq('PATCH','https://api.github.com/gists/'+SYNC.gistId,payload);}
+      catch(e){
+        if(e.status===403||e.status===404){
+          payload.public=false;g=await gistReq('POST','https://api.github.com/gists',payload);
+          SYNC.gistId=g.id;toast('原同步空間無法寫入,已自動建立新的');
+        }else throw e;
+      }
+    }
     else{payload.public=false;g=await gistReq('POST','https://api.github.com/gists',payload);SYNC.gistId=g.id;}
     SYNC.last=Date.now();saveSync();renderSyncStatus();
     if(!silent)toast('已上傳到雲端');
