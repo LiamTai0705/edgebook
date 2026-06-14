@@ -648,7 +648,64 @@ function applyDefaults(){
   if(!DB.settings)DB.settings=JSON.parse(JSON.stringify(DEFAULTS));
   if(!DB.settings.setups)DB.settings.setups=DEFAULTS.setups.slice();
   if(!DB.settings.mistakes)DB.settings.mistakes=DEFAULTS.mistakes.slice();
+  normalizeStamps(DB);
 }
+/* ═════════════════════ 跨裝置合併（逐筆 last-writer-wins + 刪除墓碑）═════════════════════ */
+/* 取一筆記錄的更新時間；舊資料無 updatedAt 時退回用交易日期，再退回 1（視為很舊）*/
+function recStamp(r){
+  if(r&&typeof r.updatedAt==='number')return r.updatedAt;
+  const d=r&&r.date?Date.parse(r.date+'T00:00:00'):0;
+  return d||1;
+}
+/* 補齊缺漏的時間戳、墓碑容器，使新舊版本資料都能參與合併 */
+function normalizeStamps(db){
+  if(!db)return db;
+  (db.trades||[]).forEach(t=>{if(typeof t.updatedAt!=='number')t.updatedAt=recStamp(t);});
+  (db.journal||[]).forEach(j=>{if(typeof j.updatedAt!=='number')j.updatedAt=recStamp(j);});
+  if(!db.tomb)db.tomb={trades:{},journal:{}};
+  if(!db.tomb.trades)db.tomb.trades={};
+  if(!db.tomb.journal)db.tomb.journal={};
+  if(typeof db.settingsAt!=='number')db.settingsAt=db.updatedAt||1;
+  return db;
+}
+/* 合併兩個記錄陣列：依 id 逐筆取較新版本，再依墓碑剔除已刪除者 */
+function mergeList(localArr,remoteArr,localTomb,remoteTomb){
+  const tomb=Object.assign({},remoteTomb||{});
+  Object.keys(localTomb||{}).forEach(id=>{tomb[id]=Math.max(tomb[id]||0,localTomb[id]);});
+  const byId={};
+  (localArr||[]).forEach(r=>{if(r&&r.id!=null)byId[r.id]=r;});
+  (remoteArr||[]).forEach(r=>{if(!r||r.id==null)return;const ex=byId[r.id];if(!ex||recStamp(r)>recStamp(ex))byId[r.id]=r;});
+  const out=[];
+  Object.keys(byId).forEach(id=>{
+    const r=byId[id],del=tomb[id];
+    if(del!=null&&del>=recStamp(r))return;        // 刪除不早於最後修改 → 維持刪除
+    if(del!=null&&recStamp(r)>del)delete tomb[id]; // 修改晚於刪除 → 復活，清除墓碑
+    out.push(r);
+  });
+  return {list:out,tomb};
+}
+/* 將 remote 併入本機 DB；回傳本機是否有變動 */
+function mergeRemote(remote){
+  normalizeStamps(DB);normalizeStamps(remote);
+  const before=JSON.stringify({t:DB.trades,j:DB.journal,s:DB.settings,tb:DB.tomb,sa:DB.settingsAt});
+  const mt=mergeList(DB.trades,remote.trades,DB.tomb.trades,remote.tomb&&remote.tomb.trades);
+  const mj=mergeList(DB.journal,remote.journal,DB.tomb.journal,remote.tomb&&remote.tomb.journal);
+  DB.trades=mt.list;DB.tomb.trades=mt.tomb;
+  DB.journal=mj.list;DB.tomb.journal=mj.tomb;
+  if((remote.settingsAt||0)>(DB.settingsAt||0)){DB.settings=remote.settings;DB.settingsAt=remote.settingsAt;}
+  if(remote.demo===false)DB.demo=false;
+  DB.updatedAt=Math.max(DB.updatedAt||0,remote.updatedAt||0);
+  const after=JSON.stringify({t:DB.trades,j:DB.journal,s:DB.settings,tb:DB.tomb,sa:DB.settingsAt});
+  return before!==after;
+}
+/* 內容指紋：用來判斷本機合併後是否比雲端多了東西、需不需要回推 */
+function dbSig(db){
+  normalizeStamps(db);
+  let mx=0;(db.trades||[]).forEach(t=>{mx=Math.max(mx,recStamp(t));});(db.journal||[]).forEach(j=>{mx=Math.max(mx,recStamp(j));});
+  return (db.trades||[]).length+'/'+(db.journal||[]).length+'/'+mx+'/'+Object.keys(db.tomb.trades).length+'/'+Object.keys(db.tomb.journal).length+'/'+(db.settingsAt||0);
+}
+/* 標記某筆記錄為已刪除（寫入墓碑，讓刪除可跨裝置傳播）*/
+function tombstone(kind,id){normalizeStamps(DB);DB.tomb[kind][id]=Date.now();}
 async function loadDB(){
   let raw=null;
   if(HAS_IDB){try{raw=await idbGet(IDB_REC);}catch(e){raw=null;}}
@@ -687,10 +744,33 @@ async function gistReq(method,url,body){
   }
   return res.json();
 }
+async function findGist(){
+  const list=await gistReq('GET','https://api.github.com/gists?per_page=100');
+  const hit=list.find(g=>g.files&&g.files[GIST_FILE]);
+  if(hit){SYNC.gistId=hit.id;saveSync();return true;}
+  return false;
+}
+/* 取得雲端目前的資料庫（找不到回傳 null）*/
+async function fetchRemoteDB(){
+  if(!SYNC.gistId&&!(await findGist()))return null;
+  const g=await gistReq('GET','https://api.github.com/gists/'+SYNC.gistId);
+  const f=g.files&&g.files[GIST_FILE];
+  if(!f)return null;
+  let content=f.content;
+  if(f.truncated)content=await (await fetch(f.raw_url)).text();
+  const remote=JSON.parse(content);
+  if(!remote.trades||!remote.settings)throw new Error('資料格式錯誤');
+  return remote;
+}
 async function syncPush(silent){
   if(!SYNC.token){if(!silent)toast('請先填入 GitHub Token','err');return;}
   if(DB.demo){if(!silent)toast('目前是範例資料,不會上傳。請先清除範例或記錄真實交易','err');return;}
   try{
+    /* 讀取-合併-寫入：先把雲端現況併進本機，再寫回，避免整包覆蓋掉其他裝置的修改 */
+    if(SYNC.gistId){
+      try{const remote=await fetchRemoteDB();if(remote&&remote.demo!==true&&mergeRemote(remote)){saveDB(true);refreshAll();}}
+      catch(e){/* 讀取雲端失敗就直接寫入本機版本 */}
+    }
     const payload={description:'EdgeBook 交易日誌同步資料',files:{[GIST_FILE]:{content:JSON.stringify(DB)}}};
     let g;
     if(SYNC.gistId){
@@ -707,32 +787,23 @@ async function syncPush(silent){
     if(!silent)toast('已上傳到雲端');
   }catch(e){toast('上傳失敗:'+e.message,'err');}
 }
-async function findGist(){
-  const list=await gistReq('GET','https://api.github.com/gists?per_page=100');
-  const hit=list.find(g=>g.files&&g.files[GIST_FILE]);
-  if(hit){SYNC.gistId=hit.id;saveSync();return true;}
-  return false;
-}
 async function syncPull(silent){
   if(!SYNC.token){if(!silent)toast('請先填入 GitHub Token','err');return;}
   try{
-    if(!SYNC.gistId&&!(await findGist())){if(!silent)toast('雲端還沒有資料,請先在另一台裝置上傳','err');return;}
-    const g=await gistReq('GET','https://api.github.com/gists/'+SYNC.gistId);
-    const f=g.files[GIST_FILE];
-    if(!f){if(!silent)toast('雲端沒有資料','err');return;}
-    let content=f.content;
-    if(f.truncated)content=await (await fetch(f.raw_url)).text();
-    const remote=JSON.parse(content);
-    if(!remote.trades||!remote.settings)throw new Error('資料格式錯誤');
-    const localStamp=DB.demo?0:(DB.updatedAt||0);
-    const remoteStamp=remote.demo?0:(remote.updatedAt||0);
-    if(remoteStamp>localStamp){
-      DB=remote;saveDB(true);refreshAll();
-      toast(silent?'已自動同步雲端資料':'已從雲端更新('+remote.trades.length+' 筆交易)');
-    }else if(localStamp>remoteStamp){
-      if(SYNC.auto)syncPush(true);
-      if(!silent)toast('本機較新,已改為上傳');
-    }else if(!silent)toast('資料已是最新');
+    const remote=await fetchRemoteDB();
+    if(remote===null){if(!silent)toast('雲端還沒有資料,請先在另一台裝置上傳','err');return;}
+    if(DB.demo){
+      if(remote.demo===true){if(!silent)toast('雲端也還沒有正式資料','err');}
+      else{DB=remote;normalizeStamps(DB);saveDB(true);refreshAll();toast(silent?'已自動同步雲端資料':'已從雲端更新('+remote.trades.length+' 筆交易)');}
+    }else if(remote.demo===true){
+      if(SYNC.auto)syncPush(true);            /* 本機是正式資料、雲端還是範例 → 上傳覆蓋 */
+      if(!silent)toast('已改為上傳本機資料');
+    }else{
+      const changed=mergeRemote(remote);
+      if(changed){saveDB(true);refreshAll();}
+      if(SYNC.auto&&dbSig(DB)!==dbSig(remote))syncPush(true); /* 本機合併後較完整 → 回推讓雲端收斂 */
+      if(!silent)toast(changed?('已從雲端合併('+DB.trades.length+' 筆交易)'):'資料已是最新');
+    }
     SYNC.last=Date.now();saveSync();renderSyncStatus();
   }catch(e){toast('下載失敗:'+e.message,'err');}
 }
@@ -1296,6 +1367,7 @@ function saveTrade(){
   const f=readForm();
   if(!f.date)return toast('請選擇日期','err');
   if(!f.entry||!f.exit)return toast('請輸入進場價與出場價','err');
+  f.updatedAt=Date.now();
   if(editId){const i=DB.trades.findIndex(t=>t.id===editId);DB.trades[i]=Object.assign({id:editId},f);toast('已更新交易');}
   else{DB.trades.push(Object.assign({id:uid()},f));toast('已新增交易');}
   if(DB.demo)DB.demo=false;
@@ -1322,8 +1394,8 @@ function saveJournal(){
   if(!date)return toast('請選擇日期','err');
   if(!text)return toast('請輸入日誌內容','err');
   const ex=DB.journal.find(j=>j.date===date);
-  if(ex){ex.text=text;ex.mood=el('jMood').value;toast('已更新 '+date+' 的日誌');}
-  else{DB.journal.push({id:uid(),date,mood:el('jMood').value,text});toast('日誌已儲存');}
+  if(ex){ex.text=text;ex.mood=el('jMood').value;ex.updatedAt=Date.now();toast('已更新 '+date+' 的日誌');}
+  else{DB.journal.push({id:uid(),date,mood:el('jMood').value,text,updatedAt:Date.now()});toast('日誌已儲存');}
   el('jText').value='';saveDB();renderJournal();
 }
 
@@ -1344,6 +1416,7 @@ function saveSettings(){
   DB.settings.capital=Number(el('setCapital').value)||0;
   DB.settings.fee=Number(el('setFee').value)||0;
   el('setSymbols').querySelectorAll('input[data-sym]').forEach(i=>{DB.settings.symbols[i.dataset.sym].pv=Number(i.value)||1;});
+  DB.settingsAt=Date.now();
   saveDB();toast('設定已儲存');refreshAll();
 }
 function exportCsv(){
@@ -1372,7 +1445,7 @@ const App={
     el('rangeSel').style.display=(view==='dashboard'||view==='analytics')?'':'none';
     refreshAll();
   },
-  delJournal(id){if(!confirm('刪除這篇日誌?'))return;DB.journal=DB.journal.filter(j=>j.id!==id);saveDB();renderJournal();toast('已刪除日誌');},
+  delJournal(id){if(!confirm('刪除這篇日誌?'))return;tombstone('journal',id);DB.journal=DB.journal.filter(j=>j.id!==id);saveDB();renderJournal();toast('已刪除日誌');},
   clearDemo(){if(!confirm('清除全部範例交易與日誌?'))return;DB.trades=[];DB.journal=[];DB.demo=false;DB.updatedAt=0;saveDB(true);refreshAll();toast('已清除範例資料,開始記錄你的第一筆交易吧');}
 };
 async function init(){
@@ -1400,7 +1473,7 @@ async function init(){
   el('tmSave').addEventListener('click',saveTrade);
   el('tmDelete').addEventListener('click',()=>{
     if(!editId||!confirm('確定刪除這筆交易?'))return;
-    DB.trades=DB.trades.filter(t=>t.id!==editId);saveDB();closeTradeModal();closeDrawer();refreshAll();toast('已刪除交易');
+    tombstone('trades',editId);DB.trades=DB.trades.filter(t=>t.id!==editId);saveDB();closeTradeModal();closeDrawer();refreshAll();toast('已刪除交易');
   });
   el('tradeOverlay').addEventListener('click',e=>{if(e.target===el('tradeOverlay'))closeTradeModal();});
   el('tLong').addEventListener('click',()=>setSide('long'));
@@ -1431,7 +1504,7 @@ async function init(){
   el('importFile').addEventListener('change',e=>{
     const f=e.target.files[0];if(!f)return;
     const r=new FileReader();
-    r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.trades||!d.settings)throw 0;DB=d;saveDB();refreshAll();toast('備份已還原,共 '+DB.trades.length+' 筆交易');}catch(err){toast('檔案格式錯誤','err');}};
+    r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.trades||!d.settings)throw 0;DB=d;normalizeStamps(DB);saveDB();refreshAll();toast('備份已還原,共 '+DB.trades.length+' 筆交易');}catch(err){toast('檔案格式錯誤','err');}};
     r.readAsText(f);e.target.value='';
   });
   el('loadDemoBtn').addEventListener('click',()=>{
@@ -1440,7 +1513,11 @@ async function init(){
   });
   el('wipeBtn').addEventListener('click',()=>{
     if(!confirm('確定清除全部交易、日誌與設定?此動作無法復原。'))return;
-    DB={settings:JSON.parse(JSON.stringify(DEFAULTS)),trades:[],journal:[],demo:false,seeded:true,updatedAt:0};
+    const now=Date.now();normalizeStamps(DB);
+    DB.trades.forEach(t=>{DB.tomb.trades[t.id]=now;});
+    DB.journal.forEach(j=>{DB.tomb.journal[j.id]=now;});
+    DB.trades=[];DB.journal=[];DB.demo=false;DB.seeded=true;
+    DB.settings=JSON.parse(JSON.stringify(DEFAULTS));DB.settingsAt=now;DB.updatedAt=now;
     saveDB(true);refreshAll();toast('已清除全部資料');
   });
   /* 雲端同步 */
