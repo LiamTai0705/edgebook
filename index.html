@@ -367,10 +367,11 @@ table.tbl{width:100%;border-collapse:collapse}
       <div class="nav-label">紀錄</div>
       <button class="nav-item" data-view="trades"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>交易紀錄</button>
       <button class="nav-item" data-view="journal"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>交易日誌</button>
+      <button class="nav-item" data-view="playbook"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H2z"/><path d="M22 4h-6a3 3 0 0 0-3 3v13a2.5 2.5 0 0 1 2.5-2.5H22z"/></svg>策略區</button>
       <div class="nav-label">系統</div>
       <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
     </nav>
-    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v11</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
+    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v12</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
   </aside>
 
   <!-- ───────── main ───────── -->
@@ -495,6 +496,16 @@ table.tbl{width:100%;border-collapse:collapse}
         </div>
       </section>
 
+      <!-- ════ playbook 策略區 ════ -->
+      <section class="view" id="view-playbook">
+        <div class="panel" style="margin-bottom:16px">
+          <div class="panel-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span class="muted-sm" style="line-height:1.6">為每一種策略寫下你的劇本：進場條件、確認訊號、停損與目標、無效化情境。交易表單裡的「策略」選項即來自這裡的清單。</span>
+          </div>
+        </div>
+        <div id="pbGrid" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:start;gap:16px"></div>
+      </section>
+
       <!-- ════ settings ════ -->
       <section class="view" id="view-settings">
         <div class="grid" style="grid-template-columns:1fr 1fr;align-items:start;max-width:980px">
@@ -549,6 +560,7 @@ table.tbl{width:100%;border-collapse:collapse}
   <button class="bnav-item" data-view="trades"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>紀錄</button>
   <button class="bnav-item" data-view="analytics"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>分析</button>
   <button class="bnav-item" data-view="journal"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>日誌</button>
+  <button class="bnav-item" data-view="playbook"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H2z"/><path d="M22 4h-6a3 3 0 0 0-3 3v13a2.5 2.5 0 0 1 2.5-2.5H22z"/></svg>策略</button>
   <button class="bnav-item" data-view="settings"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
 </nav>
 
@@ -623,9 +635,11 @@ const LS_KEY='edgebook.v1';
 const DEFAULTS={
   capital:25000, fee:2.2,
   symbols:{NQ:{pv:20,tick:.25},MNQ:{pv:2,tick:.25}},
-  setups:['開盤突破','回測均線','區間假突破','順勢回調','VWAP 反彈','尾盤動能','數據行情','逆勢接刀','其他'],
+  setups:['Reversal','Continuation'],
   mistakes:['追單','凹單','過早出場','過度重倉','無計畫進場','亂移停損','報復性交易','過度交易']
 };
+/* 舊版預設策略清單；偵測到使用者沿用舊預設（未自訂）時，自動遷移為 Reversal / Continuation */
+const OLD_DEFAULT_SETUPS=['開盤突破','回測均線','區間假突破','順勢回調','VWAP 反彈','尾盤動能','數據行情','逆勢接刀','其他'];
 let DB=null, memStore=null;
 /* ── IndexedDB 儲存層（容量遠大於 localStorage ~5MB，手機/桌面瀏覽器皆支援，圖片放得下）── */
 const IDB_DB='edgebook', IDB_STORE='kv', IDB_REC='db';
@@ -647,7 +661,10 @@ function applyDefaults(){
   if(!DB){DB={settings:JSON.parse(JSON.stringify(DEFAULTS)),trades:[],journal:[],demo:false};}
   if(!DB.settings)DB.settings=JSON.parse(JSON.stringify(DEFAULTS));
   if(!DB.settings.setups)DB.settings.setups=DEFAULTS.setups.slice();
+  /* 未自訂過策略（仍是舊版預設）→ 自動換成 Reversal / Continuation */
+  if(JSON.stringify(DB.settings.setups)===JSON.stringify(OLD_DEFAULT_SETUPS)){DB.settings.setups=DEFAULTS.setups.slice();DB.settingsAt=Date.now();}
   if(!DB.settings.mistakes)DB.settings.mistakes=DEFAULTS.mistakes.slice();
+  if(!Array.isArray(DB.playbook))DB.playbook=[];
   normalizeStamps(DB);
 }
 /* ═════════════════════ 跨裝置合併（逐筆 last-writer-wins + 刪除墓碑）═════════════════════ */
@@ -662,9 +679,12 @@ function normalizeStamps(db){
   if(!db)return db;
   (db.trades||[]).forEach(t=>{if(typeof t.updatedAt!=='number')t.updatedAt=recStamp(t);});
   (db.journal||[]).forEach(j=>{if(typeof j.updatedAt!=='number')j.updatedAt=recStamp(j);});
-  if(!db.tomb)db.tomb={trades:{},journal:{}};
+  if(!Array.isArray(db.playbook))db.playbook=[];
+  db.playbook.forEach(p=>{if(typeof p.updatedAt!=='number')p.updatedAt=1;});
+  if(!db.tomb)db.tomb={trades:{},journal:{},playbook:{}};
   if(!db.tomb.trades)db.tomb.trades={};
   if(!db.tomb.journal)db.tomb.journal={};
+  if(!db.tomb.playbook)db.tomb.playbook={};
   if(typeof db.settingsAt!=='number')db.settingsAt=db.updatedAt||1;
   return db;
 }
@@ -687,22 +707,24 @@ function mergeList(localArr,remoteArr,localTomb,remoteTomb){
 /* 將 remote 併入本機 DB；回傳本機是否有變動 */
 function mergeRemote(remote){
   normalizeStamps(DB);normalizeStamps(remote);
-  const before=JSON.stringify({t:DB.trades,j:DB.journal,s:DB.settings,tb:DB.tomb,sa:DB.settingsAt});
+  const before=JSON.stringify({t:DB.trades,j:DB.journal,p:DB.playbook,s:DB.settings,tb:DB.tomb,sa:DB.settingsAt});
   const mt=mergeList(DB.trades,remote.trades,DB.tomb.trades,remote.tomb&&remote.tomb.trades);
   const mj=mergeList(DB.journal,remote.journal,DB.tomb.journal,remote.tomb&&remote.tomb.journal);
+  const mp=mergeList(DB.playbook,remote.playbook,DB.tomb.playbook,remote.tomb&&remote.tomb.playbook);
   DB.trades=mt.list;DB.tomb.trades=mt.tomb;
   DB.journal=mj.list;DB.tomb.journal=mj.tomb;
+  DB.playbook=mp.list;DB.tomb.playbook=mp.tomb;
   if((remote.settingsAt||0)>(DB.settingsAt||0)){DB.settings=remote.settings;DB.settingsAt=remote.settingsAt;}
   if(remote.demo===false)DB.demo=false;
   DB.updatedAt=Math.max(DB.updatedAt||0,remote.updatedAt||0);
-  const after=JSON.stringify({t:DB.trades,j:DB.journal,s:DB.settings,tb:DB.tomb,sa:DB.settingsAt});
+  const after=JSON.stringify({t:DB.trades,j:DB.journal,p:DB.playbook,s:DB.settings,tb:DB.tomb,sa:DB.settingsAt});
   return before!==after;
 }
 /* 內容指紋：用來判斷本機合併後是否比雲端多了東西、需不需要回推 */
 function dbSig(db){
   normalizeStamps(db);
-  let mx=0;(db.trades||[]).forEach(t=>{mx=Math.max(mx,recStamp(t));});(db.journal||[]).forEach(j=>{mx=Math.max(mx,recStamp(j));});
-  return (db.trades||[]).length+'/'+(db.journal||[]).length+'/'+mx+'/'+Object.keys(db.tomb.trades).length+'/'+Object.keys(db.tomb.journal).length+'/'+(db.settingsAt||0);
+  let mx=0;(db.trades||[]).forEach(t=>{mx=Math.max(mx,recStamp(t));});(db.journal||[]).forEach(j=>{mx=Math.max(mx,recStamp(j));});(db.playbook||[]).forEach(p=>{mx=Math.max(mx,recStamp(p));});
+  return (db.trades||[]).length+'/'+(db.journal||[]).length+'/'+(db.playbook||[]).length+'/'+mx+'/'+Object.keys(db.tomb.trades).length+'/'+Object.keys(db.tomb.journal).length+'/'+Object.keys(db.tomb.playbook).length+'/'+(db.settingsAt||0);
 }
 /* 標記某筆記錄為已刪除（寫入墓碑，讓刪除可跨裝置傳播）*/
 function tombstone(kind,id){normalizeStamps(DB);DB.tomb[kind][id]=Date.now();}
@@ -818,7 +840,7 @@ function renderSyncStatus(){
   if(ff)ff.textContent=SYNC.last?('☁ 已同步 '+new Date(SYNC.last).toLocaleTimeString('zh-TW',{hour12:false,hour:'2-digit',minute:'2-digit'})):'';
   const elS=el('syncStatus');if(!elS)return;
   const t=SYNC.last?new Date(SYNC.last).toLocaleString('zh-TW',{hour12:false}):'尚未同步';
-  elS.innerHTML='App 版本 v11 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+'<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
+  elS.innerHTML='App 版本 v12 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+'<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
 }
 /* ── helpers ── */
 const el=id=>document.getElementById(id);
@@ -960,7 +982,7 @@ function genDemo(){
         id:uid()+i, date:dateStr,
         timeIn:pad(hh)+':'+pad(mIn), timeOut:pad(hOut%24)+':'+pad(mOut),
         symbol:sym, side, qty, entry, exit, stop, fees:Math.round(fees*100)/100,
-        setup:setups[Math.floor(rnd()*(setups.length-1))],
+        setup:setups[Math.floor(rnd()*setups.length)],
         emotion:win?(rnd()<0.6?'冷靜':'自信'):(rnd()<0.5?'焦慮':'猶豫'),
         rating:win?(3+Math.floor(rnd()*3)):(1+Math.floor(rnd()*3)),
         mistakes:[...new Set(ms)],
@@ -1401,6 +1423,26 @@ function saveJournal(){
   el('jText').value='';saveDB();renderJournal();
 }
 
+/* ═════════════════════ 策略區 Playbook ═════════════════════ */
+const PB_HINTS={Reversal:'反轉 · 逆勢轉折',Continuation:'順勢 · 回調續勢'};
+function pbGet(strategy){return (DB.playbook||[]).find(p=>p.id==='pb:'+strategy);}
+function renderPlaybook(){
+  const setups=DB.settings.setups||[];
+  el('pbGrid').innerHTML=setups.map((s,i)=>{
+    const e=pbGet(s);
+    const when=e&&e.updatedAt&&e.updatedAt>1?new Date(e.updatedAt).toLocaleString('zh-TW',{hour12:false}):'尚未編輯';
+    const sub=PB_HINTS[s]?'<span class="panel-hint" style="margin-left:auto">'+esc(PB_HINTS[s])+'</span>':'';
+    return '<div class="panel">'+
+      '<div class="panel-head"><span class="badge sym">'+esc(s)+'</span><span class="panel-title" style="font-size:.92rem">策略劇本</span>'+sub+'</div>'+
+      '<div class="panel-body">'+
+        '<textarea id="pbText'+i+'" data-strategy="'+esc(s)+'" rows="13" placeholder="寫下這個策略的市場環境、進場條件、確認訊號、停損與目標、無效化情境與部位大小…">'+esc(e?e.text:'')+'</textarea>'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-top:12px">'+
+          '<button class="btn primary" onclick="App.savePlaybook('+i+')">儲存劇本</button>'+
+          '<span class="muted-sm">上次更新：'+esc(when)+'</span>'+
+        '</div>'+
+      '</div></div>';
+  }).join('')||'<div class="panel"><div class="empty"><div class="big">📓</div>尚未設定任何策略</div></div>';
+}
 /* ═════════════════════ 設定 / 匯出入 ═════════════════════ */
 function renderSettings(){
   el('syncToken').value=SYNC.token;
@@ -1432,12 +1474,12 @@ function exportCsv(){
 }
 function refreshAll(){
   const active=(document.querySelector('.nav-item.active')||document.querySelector('.bnav-item.active')).dataset.view;
-  ({dashboard:renderDashboard,calendar:renderCalendar,trades:renderTrades,analytics:renderAnalytics,journal:renderJournal,settings:renderSettings})[active]();
+  ({dashboard:renderDashboard,calendar:renderCalendar,trades:renderTrades,analytics:renderAnalytics,journal:renderJournal,playbook:renderPlaybook,settings:renderSettings})[active]();
   saveDB(true);
 }
 
 /* ═════════════════════ App 控制 ═════════════════════ */
-const TITLES={dashboard:['總覽儀表板','Overview'],calendar:['損益日曆','P&L Calendar'],trades:['交易紀錄','Trade Log'],analytics:['數據分析','Analytics'],journal:['交易日誌','Daily Journal'],settings:['設定','Settings']};
+const TITLES={dashboard:['總覽儀表板','Overview'],calendar:['損益日曆','P&L Calendar'],trades:['交易紀錄','Trade Log'],analytics:['數據分析','Analytics'],journal:['交易日誌','Daily Journal'],playbook:['策略區','Playbook'],settings:['設定','Settings']};
 const App={
   go(view){
     document.querySelectorAll('.nav-item,.bnav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));
@@ -1448,6 +1490,14 @@ const App={
     refreshAll();
   },
   delJournal(id){if(!confirm('刪除這篇日誌?'))return;tombstone('journal',id);DB.journal=DB.journal.filter(j=>j.id!==id);saveDB();renderJournal();toast('已刪除日誌');},
+  savePlaybook(i){
+    const ta=el('pbText'+i);if(!ta)return;
+    const strategy=ta.dataset.strategy,text=ta.value.trim(),id='pb:'+strategy;
+    let e=DB.playbook.find(p=>p.id===id);
+    if(e){e.strategy=strategy;e.text=text;e.updatedAt=Date.now();}
+    else DB.playbook.push({id,strategy,text,updatedAt:Date.now()});
+    saveDB();renderPlaybook();toast('已儲存「'+strategy+'」策略劇本');
+  },
   clearDemo(){if(!confirm('清除全部範例交易與日誌?'))return;DB.trades=[];DB.journal=[];DB.demo=false;DB.updatedAt=0;saveDB(true);refreshAll();toast('已清除範例資料,開始記錄你的第一筆交易吧');}
 };
 async function init(){
@@ -1518,7 +1568,8 @@ async function init(){
     const now=Date.now();normalizeStamps(DB);
     DB.trades.forEach(t=>{DB.tomb.trades[t.id]=now;});
     DB.journal.forEach(j=>{DB.tomb.journal[j.id]=now;});
-    DB.trades=[];DB.journal=[];DB.demo=false;DB.seeded=true;
+    DB.playbook.forEach(p=>{DB.tomb.playbook[p.id]=now;});
+    DB.trades=[];DB.journal=[];DB.playbook=[];DB.demo=false;DB.seeded=true;
     DB.settings=JSON.parse(JSON.stringify(DEFAULTS));DB.settingsAt=now;DB.updatedAt=now;
     saveDB(true);refreshAll();toast('已清除全部資料');
   });
