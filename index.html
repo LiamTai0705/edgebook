@@ -327,6 +327,28 @@ table.tbl{width:100%;border-collapse:collapse}
   .statgrid{grid-template-columns:1fr 1fr}
   .filter-bar input[type=text]{flex:1;width:auto}
 }
+/* ── 交易圖片上傳 ── */
+.img-drop{border:1.5px dashed var(--border-2);border-radius:var(--r-sm);background:var(--panel-2);padding:14px;text-align:center;color:var(--muted);font-size:.85rem;cursor:pointer;transition:border-color .15s,background .15s}
+.img-drop:hover{border-color:var(--brand);color:var(--text-2)}
+.img-drop.drag{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+.img-drop svg{width:20px;height:20px;vertical-align:-4px;margin-right:5px;stroke:currentColor;fill:none;stroke-width:2}
+.img-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.img-thumb{position:relative;width:74px;height:74px;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--border);background:var(--panel-3)}
+.img-thumb img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+.img-thumb .rm{position:absolute;top:3px;right:3px;width:18px;height:18px;border:none;border-radius:50%;background:rgba(20,22,45,.72);color:#fff;font-size:12px;line-height:18px;text-align:center;cursor:pointer;padding:0}
+.img-thumb .rm:hover{background:var(--loss)}
+.dr-gallery{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.dr-gallery img{width:96px;height:96px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border);cursor:zoom-in;transition:transform .12s}
+.dr-gallery img:hover{transform:scale(1.03)}
+.lightbox{position:fixed;inset:0;z-index:120;background:rgba(15,16,35,.9);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;animation:fade .15s ease}
+.lightbox.open{display:flex}
+.lightbox img{max-width:92vw;max-height:88vh;border-radius:8px;box-shadow:var(--shadow-lg)}
+.lightbox .lb-x{position:absolute;top:18px;right:22px;width:40px;height:40px;border:none;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:20px;cursor:pointer}
+.lightbox .lb-x:hover{background:rgba(255,255,255,.26)}
+.lightbox .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border:none;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:24px;cursor:pointer}
+.lightbox .lb-nav:hover{background:rgba(255,255,255,.26)}
+.lightbox .lb-prev{left:18px}.lightbox .lb-next{right:18px}
+.lightbox .lb-count{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.8);font-size:.85rem}
 </style>
 </head>
 <body>
@@ -511,7 +533,7 @@ table.tbl{width:100%;border-collapse:collapse}
               <input type="file" id="importFile" accept=".json" style="display:none">
               <button class="btn" id="loadDemoBtn">載入範例資料</button>
               <button class="btn danger" id="wipeBtn">清除全部資料</button>
-              <div class="muted-sm" style="line-height:1.6;margin-top:4px">所有資料僅儲存在這台電腦的瀏覽器中（localStorage），不會上傳。換電腦或清除瀏覽器資料前請先備份。</div>
+              <div class="muted-sm" style="line-height:1.6;margin-top:4px">所有資料儲存在這台裝置的瀏覽器中（IndexedDB，容量充足、圖片放得下），不會上傳。換裝置或清除瀏覽器資料前請先備份，或開啟下方雲端同步。</div>
             </div>
           </div>
         </div>
@@ -553,6 +575,14 @@ table.tbl{width:100%;border-collapse:collapse}
         <div class="c2"><label class="fl">執行評分</label><select id="tRating"><option value="5">★★★★★ 完美執行</option><option value="4">★★★★ 良好</option><option value="3" selected>★★★ 普通</option><option value="2">★★ 有缺失</option><option value="1">★ 違反計畫</option></select></div>
         <div class="c4"><label class="fl">犯錯標記（可複選）</label><div id="tMistakes" style="display:flex;gap:7px;flex-wrap:wrap"></div></div>
         <div class="c4"><label class="fl">交易筆記</label><textarea id="tNotes" rows="3" placeholder="進場理由、出場依據、檢討…"></textarea></div>
+        <div class="c4"><label class="fl">圖片（進出場截圖，可多張）</label>
+          <div class="img-drop" id="imgDrop" tabindex="0">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            點擊選擇、拖曳，或直接 Ctrl/⌘+V 貼上截圖
+          </div>
+          <input type="file" id="imgInput" accept="image/*" multiple style="display:none">
+          <div class="img-thumbs" id="imgThumbs"></div>
+        </div>
       </div>
       <div class="calc-strip" id="calcStrip"></div>
     </div>
@@ -576,6 +606,15 @@ table.tbl{width:100%;border-collapse:collapse}
   <div class="drawer-body" id="drawerBody"></div>
 </div>
 
+<!-- ───── 圖片燈箱 ───── -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-x" id="lbX">✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev">‹</button>
+  <img id="lbImg" alt="">
+  <button class="lb-nav lb-next" id="lbNext">›</button>
+  <div class="lb-count" id="lbCount"></div>
+</div>
+
 <div class="toast-wrap" id="toasts"></div>
 <script>
 'use strict';
@@ -588,16 +627,46 @@ const DEFAULTS={
   mistakes:['追單','凹單','過早出場','過度重倉','無計畫進場','亂移停損','報復性交易','過度交易']
 };
 let DB=null, memStore=null;
-function loadDB(){
-  try{const raw=localStorage.getItem(LS_KEY); if(raw){DB=JSON.parse(raw);}}catch(e){DB=memStore;}
+/* ── IndexedDB 儲存層（容量遠大於 localStorage ~5MB，手機/桌面瀏覽器皆支援，圖片放得下）── */
+const IDB_DB='edgebook', IDB_STORE='kv', IDB_REC='db';
+const HAS_IDB=(typeof indexedDB!=='undefined'&&!!indexedDB);
+let _idbP=null, _idbWarned=false;
+function idb(){
+  if(_idbP)return _idbP;
+  _idbP=new Promise((res,rej)=>{
+    let r; try{r=indexedDB.open(IDB_DB,1);}catch(e){return rej(e);}
+    r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(IDB_STORE))d.createObjectStore(IDB_STORE,{keyPath:'k'});};
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+  return _idbP;
+}
+function idbGet(k){return idb().then(d=>new Promise((res,rej)=>{const tx=d.transaction(IDB_STORE,'readonly');const rq=tx.objectStore(IDB_STORE).get(k);rq.onsuccess=()=>res(rq.result?rq.result.v:null);rq.onerror=()=>rej(rq.error);}));}
+function idbSet(k,v){return idb().then(d=>new Promise((res,rej)=>{const tx=d.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).put({k,v});tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);}));}
+function applyDefaults(){
   if(!DB){DB={settings:JSON.parse(JSON.stringify(DEFAULTS)),trades:[],journal:[],demo:false};}
   if(!DB.settings)DB.settings=JSON.parse(JSON.stringify(DEFAULTS));
   if(!DB.settings.setups)DB.settings.setups=DEFAULTS.setups.slice();
   if(!DB.settings.mistakes)DB.settings.mistakes=DEFAULTS.mistakes.slice();
 }
+async function loadDB(){
+  let raw=null;
+  if(HAS_IDB){try{raw=await idbGet(IDB_REC);}catch(e){raw=null;}}
+  if(!raw){ /* 從舊版 localStorage 遷移既有資料 */
+    try{raw=localStorage.getItem(LS_KEY);}catch(e){}
+    if(raw&&HAS_IDB){try{await idbSet(IDB_REC,raw);}catch(e){}}
+  }
+  try{if(raw)DB=JSON.parse(raw);}catch(e){DB=null;}
+  if(!DB&&memStore)DB=memStore;
+  applyDefaults();
+}
 function saveDB(keepStamp){
   if(!keepStamp)DB.updatedAt=Date.now();
-  try{localStorage.setItem(LS_KEY,JSON.stringify(DB));}catch(e){memStore=DB;}
+  memStore=DB;
+  const json=JSON.stringify(DB);
+  if(HAS_IDB){idbSet(IDB_REC,json).catch(e=>{if(!_idbWarned){_idbWarned=true;toast('本機儲存失敗，請確認瀏覽器未封鎖儲存空間；建議至設定匯出備份','err');}});}
+  /* 小資料時順手寫一份 localStorage 作為備援（超量會丟例外，忽略即可，IndexedDB 為主）*/
+  try{localStorage.setItem(LS_KEY,json);}catch(e){}
   el('footCount').textContent=DB.trades.length+' 筆交易紀錄';
   if(!keepStamp)schedulePush();
 }
@@ -1110,13 +1179,63 @@ function openDrawer(id){
     '<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px">'+
     '<span class="num '+cls(t.pnl)+'" style="font-size:1.9rem;font-weight:600">'+fmt$(t.pnl,true)+'</span>'+
     '<span class="badge '+t.side+'">'+(t.side==='long'?'LONG':'SHORT')+'</span><span class="badge sym">'+esc(t.symbol)+'</span></div>'+
+    ((t.images||[]).length?'<div class="dr-gallery" id="drGallery">'+t.images.map((src,i)=>'<img src="'+src+'" data-i="'+i+'" alt="交易截圖">').join('')+'</div>':'')+
     '<div class="dl">'+items.map(i=>'<div class="it"><div class="l">'+i[0]+'</div><div class="v">'+esc(i[1])+'</div></div>').join('')+'</div>'+
     '<div style="margin-bottom:14px"><div class="muted-sm" style="margin-bottom:6px">執行評分</div><span class="stars" style="font-size:1.05rem">'+'★'.repeat(t.rating||0)+'<span class="off">'+'★'.repeat(5-(t.rating||0))+'</span></span></div>'+
     ((t.mistakes||[]).length?'<div style="margin-bottom:14px"><div class="muted-sm" style="margin-bottom:6px">犯錯標記</div>'+t.mistakes.map(m=>'<span class="chip mistake" style="margin:0 5px 5px 0">'+esc(m)+'</span>').join('')+'</div>':'')+
     '<div class="muted-sm" style="margin-bottom:6px">交易筆記</div><div class="note-block">'+(esc(t.notes)||'(無)')+'</div>';
+  const gal=el('drawerBody').querySelector('#drGallery');
+  if(gal)gal.querySelectorAll('img').forEach(im=>im.addEventListener('click',()=>openLightbox(t.images,Number(im.dataset.i))));
   el('drawer').classList.add('open');
 }
 function closeDrawer(){el('drawer').classList.remove('open');drawerId=null;}
+
+/* ═════════════════════ 交易圖片 ═════════════════════ */
+let curImages=[];
+function fileToDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(r.result);
+    r.onerror=()=>reject(r.error);
+    r.readAsDataURL(file);
+  });
+}
+async function addImageFiles(files){
+  const imgs=[...files].filter(f=>f&&f.type&&f.type.indexOf('image/')===0);
+  if(!imgs.length)return;
+  for(const f of imgs){
+    try{curImages.push(await fileToDataURL(f));}catch(e){toast('讀取圖片失敗','err');}
+  }
+  renderImgThumbs();
+}
+function renderImgThumbs(){
+  el('imgThumbs').innerHTML=curImages.map((src,i)=>
+    '<div class="img-thumb"><img src="'+src+'" data-i="'+i+'" alt=""><button type="button" class="rm" data-rm="'+i+'" title="移除">✕</button></div>'
+  ).join('');
+  el('imgThumbs').querySelectorAll('.rm').forEach(b=>b.addEventListener('click',()=>{curImages.splice(Number(b.dataset.rm),1);renderImgThumbs();}));
+  el('imgThumbs').querySelectorAll('img').forEach(im=>im.addEventListener('click',()=>openLightbox(curImages,Number(im.dataset.i))));
+}
+function bindImageUpload(){
+  const drop=el('imgDrop'),input=el('imgInput');
+  drop.addEventListener('click',()=>input.click());
+  drop.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input.click();}});
+  input.addEventListener('change',()=>{addImageFiles(input.files);input.value='';});
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag');}));
+  ['dragleave','dragend','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag');}));
+  drop.addEventListener('drop',e=>{if(e.dataTransfer&&e.dataTransfer.files.length)addImageFiles(e.dataTransfer.files);});
+  document.addEventListener('paste',e=>{
+    if(!el('tradeOverlay').classList.contains('open'))return;
+    const items=e.clipboardData&&e.clipboardData.items;if(!items)return;
+    const files=[...items].filter(it=>it.kind==='file'&&it.type.indexOf('image/')===0).map(it=>it.getAsFile());
+    if(files.length){e.preventDefault();addImageFiles(files);}
+  });
+}
+/* 燈箱 */
+let lbList=[],lbIdx=0;
+function openLightbox(list,idx){lbList=list||[];lbIdx=idx||0;if(!lbList.length)return;lbShow();el('lightbox').classList.add('open');}
+function lbShow(){el('lbImg').src=lbList[lbIdx];const multi=lbList.length>1;el('lbPrev').style.display=el('lbNext').style.display=multi?'':'none';el('lbCount').textContent=multi?(lbIdx+1)+' / '+lbList.length:'';}
+function lbNav(d){if(!lbList.length)return;lbIdx=(lbIdx+d+lbList.length)%lbList.length;lbShow();}
+function closeLightbox(){el('lightbox').classList.remove('open');}
 
 /* ═════════════════════ 新增 / 編輯交易 ═════════════════════ */
 let editId=null;
@@ -1141,6 +1260,7 @@ function openTradeModal(id){
   el('tRating').value=t?(t.rating||3):3;
   el('tNotes').value=t?(t.notes||''):'';
   el('tMistakes').querySelectorAll('input').forEach(cb=>cb.checked=!!(t&&(t.mistakes||[]).includes(cb.value)));
+  curImages=t&&Array.isArray(t.images)?t.images.slice():[];renderImgThumbs();
   updateCalc();
   el('tradeOverlay').classList.add('open');
 }
@@ -1159,7 +1279,8 @@ function readForm(){
     fees:el('tFees').value!==''?Number(el('tFees').value):Math.round(DB.settings.fee*2*(Number(el('tQty').value)||1)*100)/100,
     setup:el('tSetup').value,emotion:el('tEmotion').value,rating:Number(el('tRating').value),
     mistakes:[...el('tMistakes').querySelectorAll('input:checked')].map(cb=>cb.value),
-    notes:el('tNotes').value.trim()
+    notes:el('tNotes').value.trim(),
+    images:curImages.slice()
   };
 }
 function updateCalc(){
@@ -1254,8 +1375,8 @@ const App={
   delJournal(id){if(!confirm('刪除這篇日誌?'))return;DB.journal=DB.journal.filter(j=>j.id!==id);saveDB();renderJournal();toast('已刪除日誌');},
   clearDemo(){if(!confirm('清除全部範例交易與日誌?'))return;DB.trades=[];DB.journal=[];DB.demo=false;DB.updatedAt=0;saveDB(true);refreshAll();toast('已清除範例資料,開始記錄你的第一筆交易吧');}
 };
-function init(){
-  loadDB();loadSync();
+async function init(){
+  await loadDB();loadSync();
   if(!DB.trades.length&&!DB.seeded){
     const demo=genDemo();DB.trades=demo.trades;DB.journal=demo.journal;DB.demo=true;DB.seeded=true;
   }
@@ -1288,7 +1409,19 @@ function init(){
   /* drawer */
   el('drClose').addEventListener('click',closeDrawer);
   el('drEdit').addEventListener('click',()=>{if(drawerId){const id=drawerId;closeDrawer();openTradeModal(id);}});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeTradeModal();closeDrawer();}});
+  bindImageUpload();
+  el('lbX').addEventListener('click',closeLightbox);
+  el('lbPrev').addEventListener('click',e=>{e.stopPropagation();lbNav(-1);});
+  el('lbNext').addEventListener('click',e=>{e.stopPropagation();lbNav(1);});
+  el('lightbox').addEventListener('click',e=>{if(e.target===el('lightbox'))closeLightbox();});
+  document.addEventListener('keydown',e=>{
+    if(el('lightbox').classList.contains('open')){
+      if(e.key==='Escape')return closeLightbox();
+      if(e.key==='ArrowLeft')return lbNav(-1);
+      if(e.key==='ArrowRight')return lbNav(1);
+    }
+    if(e.key==='Escape'){closeTradeModal();closeDrawer();}
+  });
   /* journal */
   el('jSave').addEventListener('click',saveJournal);
   /* settings */
