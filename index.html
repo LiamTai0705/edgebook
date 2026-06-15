@@ -379,7 +379,7 @@ table.tbl{width:100%;border-collapse:collapse}
       <div class="nav-label">系統</div>
       <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
     </nav>
-    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v14</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
+    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v15</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
   </aside>
 
   <!-- ───────── main ───────── -->
@@ -546,6 +546,7 @@ table.tbl{width:100%;border-collapse:collapse}
                 <button class="btn" id="syncPushBtn" style="flex:1">立即上傳 ↑</button>
                 <button class="btn" id="syncPullBtn" style="flex:1">立即下載 ↓</button>
               </div>
+              <button class="btn ghost sm" style="margin-top:8px" onclick="App.relinkSync()">兩台對不上？重新連結雲端空間</button>
               <div class="muted-sm" id="syncStatus" style="margin-top:10px;line-height:1.6"></div>
             </div>
           </div>
@@ -767,7 +768,7 @@ function saveDB(keepStamp){
 }
 /* ═════════════════════ 雲端同步 (GitHub Gist) ═════════════════════ */
 const SYNC_KEY='edgebook.sync', GIST_FILE='edgebook-data.json';
-let SYNC={token:'',gistId:'',auto:true,last:0}, pushTimer=null;
+let SYNC={token:'',gistId:'',auto:true,last:0}, pushTimer=null, lastSyncErr='';
 function loadSync(){try{const r=localStorage.getItem(SYNC_KEY);if(r)SYNC=Object.assign(SYNC,JSON.parse(r));}catch(e){}}
 function saveSync(){try{localStorage.setItem(SYNC_KEY,JSON.stringify(SYNC));}catch(e){}}
 async function gistReq(method,url,body){
@@ -823,9 +824,9 @@ async function syncPush(silent){
       }
     }
     else{payload.public=false;g=await gistReq('POST','https://api.github.com/gists',payload);SYNC.gistId=g.id;}
-    SYNC.last=Date.now();saveSync();renderSyncStatus();
+    SYNC.last=Date.now();lastSyncErr='';saveSync();renderSyncStatus();
     if(!silent)toast('已上傳到雲端');
-  }catch(e){toast('上傳失敗:'+e.message,'err');}
+  }catch(e){lastSyncErr='上傳失敗:'+e.message;renderSyncStatus();toast('上傳失敗:'+e.message,'err');}
 }
 async function syncPull(silent){
   if(!SYNC.token){if(!silent)toast('請先填入 GitHub Token','err');return;}
@@ -844,8 +845,8 @@ async function syncPull(silent){
       if(SYNC.auto&&dbSig(DB)!==dbSig(remote))syncPush(true); /* 本機合併後較完整 → 回推讓雲端收斂 */
       if(!silent)toast(changed?('已從雲端合併('+DB.trades.length+' 筆交易)'):'資料已是最新');
     }
-    SYNC.last=Date.now();saveSync();renderSyncStatus();
-  }catch(e){toast('下載失敗:'+e.message,'err');}
+    SYNC.last=Date.now();lastSyncErr='';saveSync();renderSyncStatus();
+  }catch(e){lastSyncErr='下載失敗:'+e.message;renderSyncStatus();toast('下載失敗:'+e.message,'err');}
 }
 function schedulePush(){
   if(!SYNC.auto||!SYNC.token||DB.demo)return;
@@ -856,7 +857,11 @@ function renderSyncStatus(){
   if(ff)ff.textContent=SYNC.last?('☁ 已同步 '+new Date(SYNC.last).toLocaleTimeString('zh-TW',{hour12:false,hour:'2-digit',minute:'2-digit'})):'';
   const elS=el('syncStatus');if(!elS)return;
   const t=SYNC.last?new Date(SYNC.last).toLocaleString('zh-TW',{hour12:false}):'尚未同步';
-  elS.innerHTML='App 版本 v14 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+'<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
+  let sizeMB=0;try{sizeMB=JSON.stringify(DB).length/1048576;}catch(e){}
+  const sizeStr=sizeMB?' · 資料量 '+sizeMB.toFixed(2)+' MB'+(sizeMB>8?'（偏大，可能導致同步失敗，建議精簡圖片）':''):'';
+  elS.innerHTML='App 版本 v15 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
+    (lastSyncErr?'<br><span style="color:var(--loss);font-weight:600">⚠ '+esc(lastSyncErr)+'</span>':'')+
+    '<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
 }
 /* ── helpers ── */
 const el=id=>document.getElementById(id);
@@ -1332,11 +1337,37 @@ function fileToDataURL(file){
     r.readAsDataURL(file);
   });
 }
+/* 壓縮圖片：縮到最長邊 1600px 並轉 JPEG，大幅縮小體積，避免雲端同步 payload 過大而失敗 */
+function fileToCompressedDataURL(file,maxDim=1600,quality=0.82){
+  return new Promise((resolve)=>{
+    const r=new FileReader();
+    r.onerror=()=>resolve(null);
+    r.onload=()=>{
+      const orig=r.result;
+      const img=new Image();
+      img.onerror=()=>resolve(orig);
+      img.onload=()=>{
+        try{
+          const scale=Math.min(1,maxDim/Math.max(img.width,img.height));
+          const w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));
+          const c=document.createElement('canvas');c.width=w;c.height=h;
+          const ctx=c.getContext('2d');
+          ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);   /* 截圖多無透明，填白避免 PNG→JPEG 黑底 */
+          ctx.drawImage(img,0,0,w,h);
+          const out=c.toDataURL('image/jpeg',quality);
+          resolve(out&&out.length<orig.length?out:orig);
+        }catch(e){resolve(orig);}
+      };
+      img.src=orig;
+    };
+    r.readAsDataURL(file);
+  });
+}
 async function addImageFiles(files){
   const imgs=[...files].filter(f=>f&&f.type&&f.type.indexOf('image/')===0);
   if(!imgs.length)return;
   for(const f of imgs){
-    try{curImages.push(await fileToDataURL(f));}catch(e){toast('讀取圖片失敗','err');}
+    try{const d=await fileToCompressedDataURL(f);if(d)curImages.push(d);}catch(e){toast('讀取圖片失敗','err');}
   }
   renderImgThumbs();
 }
@@ -1465,16 +1496,35 @@ function saveJournal(){
 /* ═════════════════════ 策略區 Playbook ═════════════════════ */
 const PB_HINTS={Reversal:'反轉 · 逆勢轉折',Continuation:'順勢 · 回調續勢'};
 function pbGet(strategy){return (DB.playbook||[]).find(p=>p.id==='pb:'+strategy);}
+/* 取得（或建立）某卡片對應的劇本，並把目前文字框內容一併寫入，避免上傳/移除圖片時遺失尚未按儲存的文字 */
+function pbCommit(i){
+  const ta=el('pbText'+i);if(!ta)return null;
+  const strategy=ta.dataset.strategy,id='pb:'+strategy;
+  let e=DB.playbook.find(p=>p.id===id);
+  if(!e){e={id,strategy,text:'',images:[],updatedAt:Date.now()};DB.playbook.push(e);}
+  e.strategy=strategy;e.text=ta.value.trim();e.updatedAt=Date.now();
+  return e;
+}
 function renderPlaybook(){
   const setups=DB.settings.setups||[];
   el('pbGrid').innerHTML=setups.map((s,i)=>{
     const e=pbGet(s);
+    const imgs=(e&&Array.isArray(e.images))?e.images:[];
     const when=e&&e.updatedAt&&e.updatedAt>1?new Date(e.updatedAt).toLocaleString('zh-TW',{hour12:false}):'尚未編輯';
     const sub=PB_HINTS[s]?'<span class="panel-hint" style="margin-left:auto">'+esc(PB_HINTS[s])+'</span>':'';
+    const thumbs=imgs.map((src,idx)=>
+      '<div class="img-thumb"><img src="'+src+'" onclick="App.pbLightbox('+i+','+idx+')" alt="'+esc(s)+' 策略圖 '+(idx+1)+'"><button type="button" class="rm" title="移除" onclick="App.pbRemoveImage('+i+','+idx+')">✕</button></div>'
+    ).join('');
     return '<div class="panel">'+
       '<div class="panel-head"><span class="badge sym">'+esc(s)+'</span><span class="panel-title" style="font-size:.92rem">策略劇本</span>'+sub+'</div>'+
       '<div class="panel-body">'+
-        '<textarea id="pbText'+i+'" data-strategy="'+esc(s)+'" rows="13" placeholder="寫下這個策略的市場環境、進場條件、確認訊號、停損與目標、無效化情境與部位大小…">'+esc(e?e.text:'')+'</textarea>'+
+        '<textarea id="pbText'+i+'" data-strategy="'+esc(s)+'" rows="11" placeholder="寫下這個策略的市場環境、進場條件、確認訊號、停損與目標、無效化情境與部位大小…">'+esc(e?e.text:'')+'</textarea>'+
+        '<label class="fl" style="margin-top:12px">策略圖示（截圖、示意圖，讓讀的人更清楚）</label>'+
+        '<div class="img-thumbs">'+thumbs+'</div>'+
+        '<label class="img-drop" style="margin-top:8px;display:block">'+
+          '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>點擊上傳圖片（可多張）'+
+          '<input type="file" accept="image/*" multiple style="display:none" onchange="App.pbAddImages('+i+',this.files);this.value=\'\'">'+
+        '</label>'+
         '<div style="display:flex;align-items:center;gap:10px;margin-top:12px">'+
           '<button class="btn primary" onclick="App.savePlaybook('+i+')">儲存劇本</button>'+
           '<span class="muted-sm">上次更新：'+esc(when)+'</span>'+
@@ -1530,14 +1580,24 @@ const App={
   },
   delJournal(id){if(!confirm('刪除這篇日誌?'))return;tombstone('journal',id);DB.journal=DB.journal.filter(j=>j.id!==id);saveDB();renderJournal();toast('已刪除日誌');},
   savePlaybook(i){
-    const ta=el('pbText'+i);if(!ta)return;
-    const strategy=ta.dataset.strategy,text=ta.value.trim(),id='pb:'+strategy;
-    let e=DB.playbook.find(p=>p.id===id);
-    if(e){e.strategy=strategy;e.text=text;e.updatedAt=Date.now();}
-    else DB.playbook.push({id,strategy,text,updatedAt:Date.now()});
-    saveDB();renderPlaybook();toast('已儲存「'+strategy+'」策略劇本');
+    const e=pbCommit(i);if(!e)return;
+    saveDB();renderPlaybook();toast('已儲存「'+e.strategy+'」策略劇本');
   },
-  clearDemo(){if(!confirm('清除全部範例交易與日誌?'))return;DB.trades=[];DB.journal=[];DB.demo=false;DB.updatedAt=0;saveDB(true);refreshAll();toast('已清除範例資料,開始記錄你的第一筆交易吧');}
+  async pbAddImages(i,files){
+    const e=pbCommit(i);if(!e)return;
+    const imgs=[...files].filter(f=>f&&f.type&&f.type.indexOf('image/')===0);
+    if(!imgs.length)return;
+    if(!Array.isArray(e.images))e.images=[];
+    for(const f of imgs){try{const d=await fileToCompressedDataURL(f);if(d)e.images.push(d);}catch(err){toast('讀取圖片失敗','err');}}
+    e.updatedAt=Date.now();saveDB();renderPlaybook();toast('已加入 '+imgs.length+' 張圖片');
+  },
+  pbRemoveImage(i,idx){
+    const e=pbCommit(i);if(!e||!Array.isArray(e.images))return;
+    e.images.splice(idx,1);e.updatedAt=Date.now();saveDB();renderPlaybook();
+  },
+  pbLightbox(i,idx){const ta=el('pbText'+i);if(!ta)return;const e=pbGet(ta.dataset.strategy);if(e&&Array.isArray(e.images))openLightbox(e.images,idx);},
+  clearDemo(){if(!confirm('清除全部範例交易與日誌?'))return;DB.trades=[];DB.journal=[];DB.demo=false;DB.updatedAt=0;saveDB(true);refreshAll();toast('已清除範例資料,開始記錄你的第一筆交易吧');},
+  relinkSync(){if(!SYNC.token)return toast('請先填入 GitHub Token','err');SYNC.gistId='';saveSync();renderSyncStatus();toast('正在重新尋找雲端空間…');syncPull(false);}
 };
 async function init(){
   await loadDB();loadSync();
