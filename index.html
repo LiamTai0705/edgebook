@@ -105,20 +105,26 @@ body{
 
 /* ───── controls ───── */
 .btn{
-  display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:var(--r-sm);
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:7px 14px;border-radius:var(--r-sm);
   border:1px solid var(--border-2);background:#fff;color:var(--text-2);
   font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit;
-  transition:background .13s,border-color .13s,transform .08s;white-space:nowrap;
+  box-shadow:0 1px 2px rgba(23,25,60,.05);
+  transition:background .18s cubic-bezier(.4,0,.2,1),border-color .18s,box-shadow .18s,transform .12s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;
 }
-.btn:hover{background:var(--panel-2);border-color:#c6cbdd}
-.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--panel-2);border-color:#c6cbdd;box-shadow:0 3px 8px rgba(23,25,60,.1);transform:translateY(-1px)}
+.btn:active{transform:translateY(0);box-shadow:0 1px 2px rgba(23,25,60,.06)}
+.btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--brand-soft)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
 .btn svg{width:14px;height:14px;stroke:currentColor}
-.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 3px 10px rgba(93,95,239,.32)}
-.btn.primary:hover{background:#6e70f2}
-.btn.danger{color:var(--loss);border-color:rgba(238,61,109,.35)}
-.btn.danger:hover{background:var(--loss-soft)}
-.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
-.btn.ghost:hover{color:var(--text);background:rgba(35,38,59,.05)}
+.btn.primary{background:linear-gradient(135deg,#6e70f2,#5a5cf0);border-color:#5354e6;color:#fff;box-shadow:0 4px 14px rgba(93,95,239,.34),inset 0 1px 0 rgba(255,255,255,.18)}
+.btn.primary:hover{background:linear-gradient(135deg,#7a7cf6,#6466f3);box-shadow:0 7px 20px rgba(93,95,239,.42),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn.primary:active{box-shadow:0 3px 9px rgba(93,95,239,.3),inset 0 1px 0 rgba(255,255,255,.18)}
+.btn.primary:focus-visible{box-shadow:0 0 0 3px rgba(93,95,239,.35),0 4px 14px rgba(93,95,239,.34)}
+.btn.danger{color:var(--loss);border-color:rgba(238,61,109,.35);background:#fff}
+.btn.danger:hover{background:var(--loss-soft);border-color:rgba(238,61,109,.5)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted);box-shadow:none}
+.btn.ghost:hover{color:var(--text);background:rgba(35,38,59,.06);box-shadow:none;transform:none}
 .btn.sm{padding:4px 9px;font-size:.8rem}
 select,input,textarea{
   background:#fff;border:1px solid var(--border-2);color:var(--text);
@@ -133,6 +139,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.55}
 label.fl{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;font-weight:600;letter-spacing:.02em}
 .seg{display:inline-flex;background:var(--panel-3);border:1px solid var(--border-2);border-radius:var(--r-sm);padding:2px;gap:2px}
 .seg button{border:none;background:transparent;color:var(--muted);padding:5px 12px;border-radius:6px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .13s}
+.seg button:active{transform:translateY(.5px)}
 .seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(23,25,60,.12)}
 .seg.side-seg button.on.long{background:var(--win-soft);color:var(--win)}
 .seg.side-seg button.on.short{background:var(--loss-soft);color:var(--loss)}
@@ -159,6 +166,7 @@ label.fl{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;fon
 .badge.long{background:var(--win-soft);color:var(--win)}
 .badge.short{background:var(--loss-soft);color:var(--loss)}
 .badge.sym{background:rgba(59,130,246,.1);color:var(--blue);font-family:var(--font-num)}
+.badge.tf{background:var(--panel-3);color:var(--text-2);font-family:var(--font-num);border:1px solid var(--border-2)}
 .chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.74rem;background:var(--panel-3);color:var(--text-2);border:1px solid var(--border-2)}
 .chip.mistake{background:var(--loss-soft);color:#d23663;border-color:#f6cdd9}
 .stars{color:var(--amber);font-size:.8rem;letter-spacing:1px}
@@ -371,7 +379,7 @@ table.tbl{width:100%;border-collapse:collapse}
       <div class="nav-label">系統</div>
       <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
     </nav>
-    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v12</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
+    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v14</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
   </aside>
 
   <!-- ───────── main ───────── -->
@@ -443,6 +451,7 @@ table.tbl{width:100%;border-collapse:collapse}
           <select id="fSym"><option value="">全部商品</option></select>
           <select id="fSide"><option value="">多空</option><option value="long">多單</option><option value="short">空單</option></select>
           <select id="fSetup"><option value="">全部策略</option></select>
+          <select id="fTf"><option value="">全部時框</option></select>
           <select id="fResult"><option value="">盈虧</option><option value="win">獲利</option><option value="loss">虧損</option></select>
           <input type="text" id="fSearch" placeholder="搜尋筆記、標籤…" style="width:170px">
           <button class="btn ghost sm" id="fClear">清除篩選</button>
@@ -469,6 +478,10 @@ table.tbl{width:100%;border-collapse:collapse}
           <div class="panel"><div class="panel-head"><span class="panel-title">星期別表現</span></div><div class="panel-body"><div class="chart-box" style="height:190px"><canvas id="chDow"></canvas></div></div></div>
           <div class="panel"><div class="panel-head"><span class="panel-title">進場時段表現</span><span class="panel-hint">台北時間</span></div><div class="panel-body"><div class="chart-box" style="height:190px"><canvas id="chHour"></canvas></div></div></div>
           <div class="panel"><div class="panel-head"><span class="panel-title">多空比較</span></div><div class="panel-body"><div class="chart-box" style="height:190px"><canvas id="chSide"></canvas></div></div></div>
+        </div>
+        <div class="panel" style="margin-bottom:14px">
+          <div class="panel-head"><span class="panel-title">各時框表現</span><span class="panel-hint">勝率 · 期望值/筆 · 淨損益</span></div>
+          <div class="panel-body"><div id="tfTable"></div></div>
         </div>
         <div class="grid" style="grid-template-columns:1.2fr 1fr">
           <div class="panel"><div class="panel-head"><span class="panel-title">策略表現</span><span class="panel-hint">淨損益 / 勝率</span></div><div class="panel-body"><div id="setupTable"></div></div></div>
@@ -582,6 +595,7 @@ table.tbl{width:100%;border-collapse:collapse}
         <div class="c2"><label class="fl">進場價</label><input type="number" id="tEntry" step="0.25" placeholder="例 21540.25"></div>
         <div class="c2"><label class="fl">出場價</label><input type="number" id="tExit" step="0.25"></div>
         <div class="c2"><label class="fl">停損價（選填，用於計算 R）</label><input type="number" id="tStop" step="0.25"></div>
+        <div class="c2"><label class="fl">交易時框</label><select id="tTf"></select></div>
         <div class="c2"><label class="fl">策略 Setup</label><select id="tSetup"></select></div>
         <div class="c2"><label class="fl">情緒狀態</label><select id="tEmotion"><option>冷靜</option><option>自信</option><option>猶豫</option><option>焦慮</option><option>興奮</option><option>疲勞</option><option>FOMO</option></select></div>
         <div class="c2"><label class="fl">執行評分</label><select id="tRating"><option value="5">★★★★★ 完美執行</option><option value="4">★★★★ 良好</option><option value="3" selected>★★★ 普通</option><option value="2">★★ 有缺失</option><option value="1">★ 違反計畫</option></select></div>
@@ -640,6 +654,8 @@ const DEFAULTS={
 };
 /* 舊版預設策略清單；偵測到使用者沿用舊預設（未自訂）時，自動遷移為 Reversal / Continuation */
 const OLD_DEFAULT_SETUPS=['開盤突破','回測均線','區間假突破','順勢回調','VWAP 反彈','尾盤動能','數據行情','逆勢接刀','其他'];
+/* 交易時框選項 */
+const TIMEFRAMES=['30s','1m','2m','3m','5m'];
 let DB=null, memStore=null;
 /* ── IndexedDB 儲存層（容量遠大於 localStorage ~5MB，手機/桌面瀏覽器皆支援，圖片放得下）── */
 const IDB_DB='edgebook', IDB_STORE='kv', IDB_REC='db';
@@ -840,7 +856,7 @@ function renderSyncStatus(){
   if(ff)ff.textContent=SYNC.last?('☁ 已同步 '+new Date(SYNC.last).toLocaleTimeString('zh-TW',{hour12:false,hour:'2-digit',minute:'2-digit'})):'';
   const elS=el('syncStatus');if(!elS)return;
   const t=SYNC.last?new Date(SYNC.last).toLocaleString('zh-TW',{hour12:false}):'尚未同步';
-  elS.innerHTML='App 版本 v12 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+'<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
+  elS.innerHTML='App 版本 v14 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+'<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
 }
 /* ── helpers ── */
 const el=id=>document.getElementById(id);
@@ -983,6 +999,7 @@ function genDemo(){
         timeIn:pad(hh)+':'+pad(mIn), timeOut:pad(hOut%24)+':'+pad(mOut),
         symbol:sym, side, qty, entry, exit, stop, fees:Math.round(fees*100)/100,
         setup:setups[Math.floor(rnd()*setups.length)],
+        tf:TIMEFRAMES[Math.floor(rnd()*TIMEFRAMES.length)],
         emotion:win?(rnd()<0.6?'冷靜':'自信'):(rnd()<0.5?'焦慮':'猶豫'),
         rating:win?(3+Math.floor(rnd()*3)):(1+Math.floor(rnd()*3)),
         mistakes:[...new Set(ms)],
@@ -1158,6 +1175,24 @@ function renderAnalytics(){
     '<span class="num '+cls(r.st.net)+'" style="text-align:right;font-weight:600;font-size:.85rem">'+fmt$(r.st.net,true)+'</span>'+
     '<span class="num neutral" style="text-align:right;font-size:.78rem">'+fmtN(r.st.winRate,0)+'% · '+r.st.n+'筆</span></div>').join('')
     :'<div class="empty">無資料</div>';
+  /* timeframe table — 各時框勝率/期望值比較 */
+  const tfAgg={};
+  trades.forEach(t=>{if(!t.tf)return;(tfAgg[t.tf]=tfAgg[t.tf]||[]).push(t);});
+  const tfRows=TIMEFRAMES.filter(tf=>tfAgg[tf]).map(tf=>({k:tf,st:computeStats(tfAgg[tf])}));
+  const tfMaxExp=Math.max(1,...tfRows.map(r=>Math.abs(r.st.expectancy)));
+  const tfCols='grid-template-columns:62px 1fr 60px 96px 96px 50px';
+  el('tfTable').innerHTML=tfRows.length?(
+    '<div style="display:grid;'+tfCols+';gap:10px;padding:0 0 7px;font-size:.72rem;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border)"><span>時框</span><span>期望值</span><span style="text-align:right">勝率</span><span style="text-align:right">期望值/筆</span><span style="text-align:right">淨損益</span><span style="text-align:right">筆數</span></div>'+
+    tfRows.map(r=>
+    '<div style="display:grid;'+tfCols+';align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'+
+    '<span class="badge tf">'+esc(r.k)+'</span>'+
+    '<div style="height:8px;border-radius:4px;background:var(--panel-3);overflow:hidden;position:relative">'+
+    '<div style="position:absolute;top:0;bottom:0;'+(r.st.expectancy>=0?'left':'right')+':0;width:'+Math.round(Math.abs(r.st.expectancy)/tfMaxExp*100)+'%;background:'+(r.st.expectancy>=0?'var(--win)':'var(--loss)')+';opacity:.8"></div></div>'+
+    '<span class="num neutral" style="text-align:right;font-size:.82rem">'+fmtN(r.st.winRate,0)+'%</span>'+
+    '<span class="num '+cls(r.st.expectancy)+'" style="text-align:right;font-weight:600;font-size:.82rem">'+fmt$(r.st.expectancy,true)+'</span>'+
+    '<span class="num '+cls(r.st.net)+'" style="text-align:right;font-weight:600;font-size:.82rem">'+fmt$(r.st.net,true)+'</span>'+
+    '<span class="num neutral" style="text-align:right;font-size:.78rem">'+r.st.n+'</span></div>').join('')
+  ):'<div class="empty">此期間沒有含時框的交易</div>';
   /* mistakes */
   const mAgg={};
   trades.forEach(t=>(t.mistakes||[]).forEach(m=>{(mAgg[m]=mAgg[m]||{n:0,pnl:0});mAgg[m].n++;mAgg[m].pnl+=t.pnl;}));
@@ -1221,6 +1256,7 @@ function filteredTrades(){
   if(f('fSym'))tt=tt.filter(t=>t.symbol===f('fSym'));
   if(f('fSide'))tt=tt.filter(t=>t.side===f('fSide'));
   if(f('fSetup'))tt=tt.filter(t=>t.setup===f('fSetup'));
+  if(f('fTf'))tt=tt.filter(t=>t.tf===f('fTf'));
   if(f('fResult')==='win')tt=tt.filter(t=>t.pnl>0);
   if(f('fResult')==='loss')tt=tt.filter(t=>t.pnl<0);
   const q=f('fSearch').trim().toLowerCase();
@@ -1231,12 +1267,13 @@ function filteredTrades(){
 }
 function renderTrades(){
   const tt=filteredTrades();
-  const cols=[['datetime','日期 / 時間'],['symbol','商品'],['side','方向'],['qty','口數'],['entry','進場'],['exit','出場'],['pts','點數'],['pnl','淨損益'],['r','R 倍數'],['mins','持倉'],['setup','策略'],['rating','評分']];
+  const cols=[['datetime','日期 / 時間'],['symbol','商品'],['side','方向'],['tf','時框'],['qty','口數'],['entry','進場'],['exit','出場'],['pts','點數'],['pnl','淨損益'],['r','R 倍數'],['mins','持倉'],['setup','策略'],['rating','評分']];
   const head='<thead><tr>'+cols.map(c=>'<th data-k="'+c[0]+'">'+c[1]+(sortKey===c[0]?'<span class="arrow">'+(sortDir>0?'▲':'▼')+'</span>':'')+'</th>').join('')+'</tr></thead>';
   const body='<tbody>'+(tt.length?tt.map(t=>
     '<tr data-id="'+t.id+'"><td class="num">'+t.date+' <span class="neutral">'+(t.timeIn||'')+'</span></td>'+
     '<td><span class="badge sym">'+esc(t.symbol)+'</span></td>'+
     '<td><span class="badge '+t.side+'">'+(t.side==='long'?'多':'空')+'</span></td>'+
+    '<td>'+(t.tf?'<span class="badge tf">'+esc(t.tf)+'</span>':'<span class="neutral">—</span>')+'</td>'+
     '<td class="num">'+t.qty+'</td><td class="num">'+fmtN(t.entry)+'</td><td class="num">'+fmtN(t.exit)+'</td>'+
     '<td class="num '+cls(t.pts)+'">'+(t.pts>0?'+':'')+fmtN(t.pts)+'</td>'+
     '<td class="num '+cls(t.pnl)+'" style="font-weight:600">'+fmt$(t.pnl,true)+'</td>'+
@@ -1244,7 +1281,7 @@ function renderTrades(){
     '<td class="num neutral">'+(t.mins!=null?t.mins+'分':'—')+'</td>'+
     '<td><span class="chip">'+esc(t.setup||'—')+'</span>'+((t.mistakes||[]).length?' <span class="chip mistake">'+t.mistakes.length+' 錯誤</span>':'')+'</td>'+
     '<td><span class="stars">'+'★'.repeat(t.rating||0)+'<span class="off">'+'★'.repeat(5-(t.rating||0))+'</span></span></td></tr>').join('')
-    :'<tr><td colspan="12"><div class="empty"><div class="big">◎</div>沒有符合條件的交易</div></td></tr>')+'</tbody>';
+    :'<tr><td colspan="13"><div class="empty"><div class="big">◎</div>沒有符合條件的交易</div></td></tr>')+'</tbody>';
   el('tradesTbl').innerHTML=head+body;
   el('tradesTbl').querySelectorAll('th').forEach(th=>th.addEventListener('click',()=>{
     const k=th.dataset.k; if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=-1;} renderTrades();
@@ -1268,7 +1305,7 @@ function openDrawer(id){
     ['點數',(t.pts>0?'+':'')+fmtN(t.pts)+' 點'],
     ['毛損益 / 手續費',fmt$(t.gross,true)+' / '+fmt$(-(t.fees||0))],
     ['R 倍數',t.r!=null?(t.r>0?'+':'')+fmtN(t.r,2)+'R':'—'],
-    ['策略',t.setup||'—'],['情緒',t.emotion||'—'],
+    ['策略 / 時框',(t.setup||'—')+(t.tf?' · '+t.tf:'')],['情緒',t.emotion||'—'],
   ];
   el('drawerBody').innerHTML=
     '<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px">'+
@@ -1338,6 +1375,7 @@ function fillSelect(id,arr,withEmpty){el(id).innerHTML=(withEmpty?'<option value
 function openTradeModal(id){
   editId=id||null;
   fillSelect('tSym',Object.keys(DB.settings.symbols));
+  fillSelect('tTf',TIMEFRAMES);
   fillSelect('tSetup',DB.settings.setups);
   el('tMistakes').innerHTML=DB.settings.mistakes.map(m=>'<label class="chip" style="cursor:pointer;gap:5px"><input type="checkbox" value="'+esc(m)+'" style="accent-color:var(--loss);margin:0">'+esc(m)+'</label>').join('');
   const t=id?DB.trades.find(x=>x.id===id):null;
@@ -1351,6 +1389,7 @@ function openTradeModal(id){
   el('tEntry').value=t?t.entry:'';el('tExit').value=t?t.exit:'';el('tStop').value=t&&t.stop?t.stop:'';
   el('tFees').value=t?(t.fees||0):'';
   el('tSetup').value=t?t.setup:DB.settings.setups[0];
+  el('tTf').value=t&&t.tf?t.tf:'1m';
   el('tEmotion').value=t?t.emotion:'冷靜';
   el('tRating').value=t?(t.rating||3):3;
   el('tNotes').value=t?(t.notes||''):'';
@@ -1372,7 +1411,7 @@ function readForm(){
     entry:Number(el('tEntry').value),exit:Number(el('tExit').value),
     stop:el('tStop').value?Number(el('tStop').value):null,
     fees:el('tFees').value!==''?Number(el('tFees').value):Math.round(DB.settings.fee*2*(Number(el('tQty').value)||1)*100)/100,
-    setup:el('tSetup').value,emotion:el('tEmotion').value,rating:Number(el('tRating').value),
+    setup:el('tSetup').value,tf:el('tTf').value,emotion:el('tEmotion').value,rating:Number(el('tRating').value),
     mistakes:[...el('tMistakes').querySelectorAll('input:checked')].map(cb=>cb.value),
     notes:el('tNotes').value.trim(),
     images:curImages.slice()
@@ -1466,8 +1505,8 @@ function saveSettings(){
 function exportCsv(){
   const tt=filteredTrades();
   if(!tt.length)return toast('沒有可匯出的交易','err');
-  const head=['日期','進場時間','出場時間','商品','方向','口數','進場價','出場價','停損價','點數','毛損益','手續費','淨損益','R倍數','持倉分鐘','策略','情緒','評分','錯誤','筆記'];
-  const rows=tt.map(t=>[t.date,t.timeIn,t.timeOut,t.symbol,t.side==='long'?'多':'空',t.qty,t.entry,t.exit,t.stop||'',t.pts.toFixed(2),t.gross.toFixed(2),(t.fees||0).toFixed(2),t.pnl.toFixed(2),t.r!=null?t.r.toFixed(2):'',t.mins!=null?t.mins:'',t.setup,t.emotion,t.rating,(t.mistakes||[]).join('|'),(t.notes||'').replace(/\n/g,' ')]);
+  const head=['日期','進場時間','出場時間','商品','方向','時框','口數','進場價','出場價','停損價','點數','毛損益','手續費','淨損益','R倍數','持倉分鐘','策略','情緒','評分','錯誤','筆記'];
+  const rows=tt.map(t=>[t.date,t.timeIn,t.timeOut,t.symbol,t.side==='long'?'多':'空',t.tf||'',t.qty,t.entry,t.exit,t.stop||'',t.pts.toFixed(2),t.gross.toFixed(2),(t.fees||0).toFixed(2),t.pnl.toFixed(2),t.r!=null?t.r.toFixed(2):'',t.mins!=null?t.mins:'',t.setup,t.emotion,t.rating,(t.mistakes||[]).join('|'),(t.notes||'').replace(/\n/g,' ')]);
   const csv='﻿'+[head,...rows].map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
   download('trades_'+todayStr()+'.csv',csv,'text/csv;charset=utf-8');
   toast('已匯出 '+tt.length+' 筆交易');
@@ -1515,9 +1554,9 @@ async function init(){
   el('calNext').addEventListener('click',()=>{calM++;if(calM>11){calM=0;calY++;}renderCalendar();});
   el('calToday').addEventListener('click',()=>{const n=new Date();calY=n.getFullYear();calM=n.getMonth();renderCalendar();});
   /* filters */
-  ['fFrom','fTo','fSym','fSide','fSetup','fResult'].forEach(id=>el(id).addEventListener('change',renderTrades));
+  ['fFrom','fTo','fSym','fSide','fSetup','fTf','fResult'].forEach(id=>el(id).addEventListener('change',renderTrades));
   el('fSearch').addEventListener('input',renderTrades);
-  el('fClear').addEventListener('click',()=>{['fFrom','fTo','fSym','fSide','fSetup','fResult','fSearch'].forEach(id=>el(id).value='');renderTrades();});
+  el('fClear').addEventListener('click',()=>{['fFrom','fTo','fSym','fSide','fSetup','fTf','fResult','fSearch'].forEach(id=>el(id).value='');renderTrades();});
   el('exportCsvBtn').addEventListener('click',exportCsv);
   /* modal */
   el('tmClose').addEventListener('click',closeTradeModal);
@@ -1594,6 +1633,7 @@ async function init(){
   /* 填充篩選選單 */
   fillSelect('fSym',Object.keys(DB.settings.symbols),'全部商品');
   fillSelect('fSetup',DB.settings.setups,'全部策略');
+  fillSelect('fTf',TIMEFRAMES,'全部時框');
   App.go('dashboard');
   /* PWA service worker(部署到 http(s) 時才註冊)*/
   if(location.protocol.indexOf('http')===0&&'serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
