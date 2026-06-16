@@ -167,6 +167,12 @@ label.fl{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;fon
 .badge.short{background:var(--loss-soft);color:var(--loss)}
 .badge.sym{background:rgba(59,130,246,.1);color:var(--blue);font-family:var(--font-num)}
 .badge.tf{background:var(--panel-3);color:var(--text-2);font-family:var(--font-num);border:1px solid var(--border-2)}
+.badge.liq{background:rgba(245,166,35,.12);color:#b9791a;font-family:var(--font-num);font-size:.72rem;padding:1.5px 6px}
+.lqfilter{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap}
+.lqf-label{font-size:.78rem;color:var(--muted);font-weight:600}
+.lqchip{border:1px solid var(--border-2);background:#fff;color:var(--muted);border-radius:20px;padding:4px 10px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background .13s,border-color .13s,color .13s}
+.lqchip:hover{border-color:#c6cbdd}
+.lqchip.on{background:var(--brand-soft);color:var(--brand);border-color:rgba(93,95,239,.4)}
 .chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.74rem;background:var(--panel-3);color:var(--text-2);border:1px solid var(--border-2)}
 .chip.mistake{background:var(--loss-soft);color:#d23663;border-color:#f6cdd9}
 .chip.hi{background:var(--brand-soft);color:var(--brand);border-color:rgba(93,95,239,.28);font-weight:600;cursor:help}
@@ -385,7 +391,7 @@ table.tbl{width:100%;border-collapse:collapse}
       <div class="nav-label">系統</div>
       <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
     </nav>
-    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v17</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
+    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v18</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
   </aside>
 
   <!-- ───────── main ───────── -->
@@ -463,6 +469,7 @@ table.tbl{width:100%;border-collapse:collapse}
           <select id="fSetup"><option value="">全部策略</option></select>
           <select id="fTf"><option value="">全部時框</option></select>
           <select id="fHi"><option value="">有無重點</option><option value="has">有重點</option><option value="no">無重點</option></select>
+          <div id="fLiq" class="lqfilter"><span class="lqf-label">流動性</span></div>
           <select id="fResult"><option value="">盈虧</option><option value="win">獲利</option><option value="loss">虧損</option></select>
           <input type="text" id="fSearch" placeholder="搜尋筆記、標籤…" style="width:170px">
           <button class="btn ghost sm" id="fClear">清除篩選</button>
@@ -611,6 +618,7 @@ table.tbl{width:100%;border-collapse:collapse}
         <div class="c2"><label class="fl">策略 Setup</label><select id="tSetup"></select></div>
         <div class="c2"><label class="fl">情緒狀態</label><select id="tEmotion"><option>冷靜</option><option>自信</option><option>猶豫</option><option>焦慮</option><option>興奮</option><option>疲勞</option><option>FOMO</option></select></div>
         <div class="c2"><label class="fl">執行評分</label><select id="tRating"><option value="5">★★★★★ 完美執行</option><option value="4">★★★★ 良好</option><option value="3" selected>★★★ 普通</option><option value="2">★★ 有缺失</option><option value="1">★ 違反計畫</option></select></div>
+        <div class="c4"><label class="fl">流動性時框（可複選）</label><div id="tLiq" style="display:flex;gap:7px;flex-wrap:wrap"></div></div>
         <div class="c4"><label class="fl">犯錯標記（可複選）</label><div id="tMistakes" style="display:flex;gap:7px;flex-wrap:wrap"></div></div>
         <div class="c4"><label class="fl">重點（這筆有什麼特別之處，選填）</label><input type="text" id="tHi" placeholder="例：完美執行計畫 / 關鍵反轉訊號 / 違反紀律的一筆…"></div>
         <div class="c4"><label class="fl">交易筆記</label><textarea id="tNotes" rows="3" placeholder="進場理由、出場依據、檢討…"></textarea></div>
@@ -667,8 +675,10 @@ const DEFAULTS={
 };
 /* 舊版預設策略清單；偵測到使用者沿用舊預設（未自訂）時，自動遷移為 Reversal / Continuation */
 const OLD_DEFAULT_SETUPS=['開盤突破','回測均線','區間假突破','順勢回調','VWAP 反彈','尾盤動能','數據行情','逆勢接刀','其他'];
-/* 交易時框選項 */
+/* 交易時框選項（單選）*/
 const TIMEFRAMES=['30s','1m','2m','3m','5m'];
+/* 流動性時框選項（可複選）*/
+const LIQ_TF=['5m','15m','30m','1h'];
 let DB=null, memStore=null;
 /* ── IndexedDB 儲存層（容量遠大於 localStorage ~5MB，手機/桌面瀏覽器皆支援，圖片放得下）── */
 const IDB_DB='edgebook', IDB_STORE='kv', IDB_REC='db';
@@ -871,7 +881,7 @@ function renderSyncStatus(){
   const t=SYNC.last?new Date(SYNC.last).toLocaleString('zh-TW',{hour12:false}):'尚未同步';
   let sizeMB=0;try{sizeMB=JSON.stringify(DB).length/1048576;}catch(e){}
   const sizeStr=sizeMB?' · 資料量 '+sizeMB.toFixed(2)+' MB'+(sizeMB>8?'（偏大，可能導致同步失敗，建議精簡圖片）':''):'';
-  elS.innerHTML='App 版本 v17 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
+  elS.innerHTML='App 版本 v18 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
     (lastSyncErr?'<br><span style="color:var(--loss);font-weight:600">⚠ '+esc(lastSyncErr)+'</span>':'')+
     '<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
 }
@@ -1017,6 +1027,7 @@ function genDemo(){
         symbol:sym, side, qty, entry, exit, stop, fees:Math.round(fees*100)/100,
         setup:setups[Math.floor(rnd()*setups.length)],
         tf:TIMEFRAMES[Math.floor(rnd()*TIMEFRAMES.length)],
+        liq:LIQ_TF.filter(()=>rnd()<0.4),
         emotion:win?(rnd()<0.6?'冷靜':'自信'):(rnd()<0.5?'焦慮':'猶豫'),
         rating:win?(3+Math.floor(rnd()*3)):(1+Math.floor(rnd()*3)),
         mistakes:[...new Set(ms)],
@@ -1293,6 +1304,8 @@ function filteredTrades(){
   if(f('fTf'))tt=tt.filter(t=>t.tf===f('fTf'));
   if(f('fHi')==='has')tt=tt.filter(t=>!!(t.highlight&&t.highlight.trim()));
   if(f('fHi')==='no')tt=tt.filter(t=>!(t.highlight&&t.highlight.trim()));
+  const liqSel=[...document.querySelectorAll('#fLiq .lqchip.on')].map(c=>c.dataset.v);
+  if(liqSel.length)tt=tt.filter(t=>(t.liq||[]).some(x=>liqSel.includes(x)));
   if(f('fResult')==='win')tt=tt.filter(t=>t.pnl>0);
   if(f('fResult')==='loss')tt=tt.filter(t=>t.pnl<0);
   const q=f('fSearch').trim().toLowerCase();
@@ -1309,7 +1322,7 @@ function renderTrades(){
     '<tr data-id="'+t.id+'"><td class="num">'+t.date+' <span class="neutral">'+(t.timeIn||'')+'</span></td>'+
     '<td><span class="badge sym">'+esc(t.symbol)+'</span></td>'+
     '<td><span class="badge '+t.side+'">'+(t.side==='long'?'多':'空')+'</span></td>'+
-    '<td>'+(t.tf?'<span class="badge tf">'+esc(t.tf)+'</span>':'<span class="neutral">—</span>')+'</td>'+
+    '<td style="white-space:nowrap">'+(t.tf?'<span class="badge tf">'+esc(t.tf)+'</span>':'<span class="neutral">—</span>')+(t.liq&&t.liq.length?' '+t.liq.map(l=>'<span class="badge liq">'+esc(l)+'</span>').join(' '):'')+'</td>'+
     '<td class="num">'+t.qty+'</td><td class="num">'+fmtN(t.entry)+'</td><td class="num">'+fmtN(t.exit)+'</td>'+
     '<td class="num '+cls(t.pts)+'">'+(t.pts>0?'+':'')+fmtN(t.pts)+'</td>'+
     '<td class="num '+cls(t.pnl)+'" style="font-weight:600">'+fmt$(t.pnl,true)+'</td>'+
@@ -1341,7 +1354,9 @@ function openDrawer(id){
     ['點數',(t.pts>0?'+':'')+fmtN(t.pts)+' 點'],
     ['毛損益 / 手續費',fmt$(t.gross,true)+' / '+fmt$(-(t.fees||0))],
     ['R 倍數',t.r!=null?(t.r>0?'+':'')+fmtN(t.r,2)+'R':'—'],
-    ['策略 / 時框',(t.setup||'—')+(t.tf?' · '+t.tf:'')],['情緒',t.emotion||'—'],
+    ['策略 / 時框',(t.setup||'—')+(t.tf?' · '+t.tf:'')],
+    ['流動性時框',(t.liq&&t.liq.length)?t.liq.join('、'):'—'],
+    ['情緒',t.emotion||'—'],
   ];
   el('drawerBody').innerHTML=
     '<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px">'+
@@ -1441,6 +1456,7 @@ function openTradeModal(id){
   fillSelect('tTf',TIMEFRAMES);
   fillSelect('tSetup',DB.settings.setups);
   el('tMistakes').innerHTML=DB.settings.mistakes.map(m=>'<label class="chip" style="cursor:pointer;gap:5px"><input type="checkbox" value="'+esc(m)+'" style="accent-color:var(--loss);margin:0">'+esc(m)+'</label>').join('');
+  el('tLiq').innerHTML=LIQ_TF.map(m=>'<label class="chip" style="cursor:pointer;gap:5px"><input type="checkbox" value="'+esc(m)+'" style="accent-color:var(--brand);margin:0">'+esc(m)+'</label>').join('');
   const t=id?DB.trades.find(x=>x.id===id):null;
   el('tmTitle').textContent=t?'編輯交易':'新增交易';
   el('tmDelete').style.display=t?'':'none';
@@ -1458,6 +1474,7 @@ function openTradeModal(id){
   el('tHi').value=t&&t.highlight?t.highlight:'';
   el('tNotes').value=t?(t.notes||''):'';
   el('tMistakes').querySelectorAll('input').forEach(cb=>cb.checked=!!(t&&(t.mistakes||[]).includes(cb.value)));
+  el('tLiq').querySelectorAll('input').forEach(cb=>cb.checked=!!(t&&(t.liq||[]).includes(cb.value)));
   curImages=t&&Array.isArray(t.images)?t.images.slice():[];renderImgThumbs();
   updateCalc();
   el('tradeOverlay').classList.add('open');
@@ -1477,6 +1494,7 @@ function readForm(){
     fees:el('tFees').value!==''?Number(el('tFees').value):Math.round(DB.settings.fee*2*(Number(el('tQty').value)||1)*100)/100,
     setup:el('tSetup').value,tf:el('tTf').value,emotion:el('tEmotion').value,rating:Number(el('tRating').value),
     mistakes:[...el('tMistakes').querySelectorAll('input:checked')].map(cb=>cb.value),
+    liq:[...el('tLiq').querySelectorAll('input:checked')].map(cb=>cb.value),
     highlight:el('tHi').value.trim(),
     notes:el('tNotes').value.trim(),
     images:curImages.slice()
@@ -1589,8 +1607,8 @@ function saveSettings(){
 function exportCsv(){
   const tt=filteredTrades();
   if(!tt.length)return toast('沒有可匯出的交易','err');
-  const head=['日期','進場時間','出場時間','商品','方向','時框','口數','進場價','出場價','停損價','點數','毛損益','手續費','淨損益','R倍數','持倉分鐘','策略','情緒','評分','錯誤','重點','筆記'];
-  const rows=tt.map(t=>[t.date,t.timeIn,t.timeOut,t.symbol,t.side==='long'?'多':'空',t.tf||'',t.qty,t.entry,t.exit,t.stop||'',t.pts.toFixed(2),t.gross.toFixed(2),(t.fees||0).toFixed(2),t.pnl.toFixed(2),t.r!=null?t.r.toFixed(2):'',t.mins!=null?t.mins:'',t.setup,t.emotion,t.rating,(t.mistakes||[]).join('|'),(t.highlight||'').replace(/\n/g,' '),(t.notes||'').replace(/\n/g,' ')]);
+  const head=['日期','進場時間','出場時間','商品','方向','時框','流動性時框','口數','進場價','出場價','停損價','點數','毛損益','手續費','淨損益','R倍數','持倉分鐘','策略','情緒','評分','錯誤','重點','筆記'];
+  const rows=tt.map(t=>[t.date,t.timeIn,t.timeOut,t.symbol,t.side==='long'?'多':'空',t.tf||'',(t.liq||[]).join('|'),t.qty,t.entry,t.exit,t.stop||'',t.pts.toFixed(2),t.gross.toFixed(2),(t.fees||0).toFixed(2),t.pnl.toFixed(2),t.r!=null?t.r.toFixed(2):'',t.mins!=null?t.mins:'',t.setup,t.emotion,t.rating,(t.mistakes||[]).join('|'),(t.highlight||'').replace(/\n/g,' '),(t.notes||'').replace(/\n/g,' ')]);
   const csv='﻿'+[head,...rows].map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
   download('trades_'+todayStr()+'.csv',csv,'text/csv;charset=utf-8');
   toast('已匯出 '+tt.length+' 筆交易');
@@ -1632,7 +1650,7 @@ const App={
   pbLightbox(i,idx){const ta=el('pbText'+i);if(!ta)return;const e=pbGet(ta.dataset.strategy);if(e&&Array.isArray(e.images))openLightbox(e.images,idx);},
   clearDemo(){if(!confirm('清除全部範例交易與日誌?'))return;DB.trades=[];DB.journal=[];DB.demo=false;DB.updatedAt=0;saveDB(true);refreshAll();toast('已清除範例資料,開始記錄你的第一筆交易吧');},
   relinkSync(){if(!SYNC.token)return toast('請先填入 GitHub Token','err');SYNC.gistId='';saveSync();renderSyncStatus();toast('正在重新尋找雲端空間…');syncPull(false);},
-  goHighlights(){['fFrom','fTo','fSym','fSide','fSetup','fTf','fResult','fSearch'].forEach(id=>{const e=el(id);if(e)e.value='';});const h=el('fHi');if(h)h.value='has';App.go('trades');}
+  goHighlights(){['fFrom','fTo','fSym','fSide','fSetup','fTf','fResult','fSearch'].forEach(id=>{const e=el(id);if(e)e.value='';});el('fLiq').querySelectorAll('.lqchip').forEach(c=>c.classList.remove('on'));const h=el('fHi');if(h)h.value='has';App.go('trades');}
 };
 async function init(){
   await loadDB();loadSync();
@@ -1651,7 +1669,10 @@ async function init(){
   /* filters */
   ['fFrom','fTo','fSym','fSide','fSetup','fTf','fHi','fResult'].forEach(id=>el(id).addEventListener('change',renderTrades));
   el('fSearch').addEventListener('input',renderTrades);
-  el('fClear').addEventListener('click',()=>{['fFrom','fTo','fSym','fSide','fSetup','fTf','fHi','fResult','fSearch'].forEach(id=>el(id).value='');renderTrades();});
+  el('fClear').addEventListener('click',()=>{['fFrom','fTo','fSym','fSide','fSetup','fTf','fHi','fResult','fSearch'].forEach(id=>el(id).value='');el('fLiq').querySelectorAll('.lqchip').forEach(c=>c.classList.remove('on'));renderTrades();});
+  /* 流動性時框篩選（可複選 toggle）*/
+  el('fLiq').insertAdjacentHTML('beforeend',LIQ_TF.map(v=>'<button type="button" class="lqchip" data-v="'+esc(v)+'">'+esc(v)+'</button>').join(''));
+  el('fLiq').querySelectorAll('.lqchip').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');renderTrades();}));
   el('exportCsvBtn').addEventListener('click',exportCsv);
   /* modal */
   el('tmClose').addEventListener('click',closeTradeModal);
