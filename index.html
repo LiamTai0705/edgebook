@@ -48,8 +48,9 @@
   --side-bg:#26245f;
   --r-sm:8px; --r-md:12px; --r-lg:14px;
   --font-num:'Inter','Noto Sans TC',sans-serif;
-  --shadow-card:0 1px 3px rgba(23,25,60,.06),0 1px 2px rgba(23,25,60,.04);
+  --shadow-card:0 1px 2px rgba(23,25,60,.04),0 8px 20px -12px rgba(23,25,60,.14);
   --shadow-lg:0 24px 64px rgba(23,25,60,.22);
+  --ring:0 0 0 3px rgba(93,95,239,.20);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{font-size:13.5px}
@@ -114,13 +115,13 @@ body{
 }
 .btn:hover{background:var(--panel-2);border-color:#c6cbdd;box-shadow:0 3px 8px rgba(23,25,60,.1);transform:translateY(-1px)}
 .btn:active{transform:translateY(0);box-shadow:0 1px 2px rgba(23,25,60,.06)}
-.btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--brand-soft)}
+.btn:focus-visible{outline:none;box-shadow:var(--ring)}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
 .btn svg{width:14px;height:14px;stroke:currentColor}
-.btn.primary{background:linear-gradient(135deg,#6e70f2,#5a5cf0);border-color:#5354e6;color:#fff;box-shadow:0 4px 14px rgba(93,95,239,.34),inset 0 1px 0 rgba(255,255,255,.18)}
-.btn.primary:hover{background:linear-gradient(135deg,#7a7cf6,#6466f3);box-shadow:0 7px 20px rgba(93,95,239,.42),inset 0 1px 0 rgba(255,255,255,.22)}
-.btn.primary:active{box-shadow:0 3px 9px rgba(93,95,239,.3),inset 0 1px 0 rgba(255,255,255,.18)}
-.btn.primary:focus-visible{box-shadow:0 0 0 3px rgba(93,95,239,.35),0 4px 14px rgba(93,95,239,.34)}
+.btn.primary{background:linear-gradient(180deg,#6c6ef5,#5557ec);border-color:#4d4fe0;color:#fff;box-shadow:0 4px 12px -2px rgba(93,95,239,.45),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn.primary:hover{background:linear-gradient(180deg,#7779f7,#5e60f0);box-shadow:0 7px 18px -3px rgba(93,95,239,.52),inset 0 1px 0 rgba(255,255,255,.26)}
+.btn.primary:active{box-shadow:0 2px 8px -2px rgba(93,95,239,.4),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn.primary:focus-visible{box-shadow:0 0 0 3px rgba(93,95,239,.38),0 4px 12px -2px rgba(93,95,239,.45)}
 .btn.danger{color:var(--loss);border-color:rgba(238,61,109,.35);background:#fff}
 .btn.danger:hover{background:var(--loss-soft);border-color:rgba(238,61,109,.5)}
 .btn.ghost{border-color:transparent;background:transparent;color:var(--muted);box-shadow:none}
@@ -152,9 +153,10 @@ label.fl{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;fon
 .panel-body{padding:14px 16px}
 .grid{display:grid;gap:14px}
 .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin-bottom:14px}
-.kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-md);padding:13px 15px 12px;position:relative;overflow:hidden;box-shadow:var(--shadow-card)}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px 13px;position:relative;overflow:hidden;box-shadow:var(--shadow-card);transition:transform .14s cubic-bezier(.4,0,.2,1),box-shadow .14s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(23,25,60,.04),0 14px 28px -14px rgba(23,25,60,.22)}
 .kpi-label{font-size:.76rem;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:5px}
-.kpi-val{font-size:1.42rem;font-weight:700;margin-top:5px;font-family:var(--font-num);letter-spacing:-.02em}
+.kpi-val{font-size:1.52rem;font-weight:700;margin-top:6px;font-family:var(--font-num);letter-spacing:-.025em}
 .kpi-sub{font-size:.74rem;color:var(--faint);margin-top:3px}
 .kpi::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--kpi-accent,transparent)}
 .kpi-ring{position:absolute;right:12px;top:14px}
@@ -168,12 +170,13 @@ label.fl{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;fon
 .badge.sym{background:rgba(59,130,246,.1);color:var(--blue);font-family:var(--font-num)}
 .badge.tf{background:var(--panel-3);color:var(--text-2);font-family:var(--font-num);border:1px solid var(--border-2)}
 .badge.liq{background:rgba(245,166,35,.12);color:#b9791a;font-family:var(--font-num);font-size:.72rem;padding:1.5px 6px}
+.liq-cell{display:flex;flex-wrap:wrap;gap:3px;max-width:172px}
 .lqfilter{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap}
 .lqf-label{font-size:.78rem;color:var(--muted);font-weight:600}
 .lqchip{border:1px solid var(--border-2);background:#fff;color:var(--muted);border-radius:20px;padding:4px 10px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background .13s,border-color .13s,color .13s}
 .lqchip:hover{border-color:#c6cbdd}
 .lqchip.on{background:var(--brand-soft);color:var(--brand);border-color:rgba(93,95,239,.4)}
-.chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.74rem;background:var(--panel-3);color:var(--text-2);border:1px solid var(--border-2)}
+.chip{display:inline-flex;align-items:center;padding:2.5px 8px;border-radius:7px;font-size:.74rem;font-weight:500;background:var(--panel-3);color:var(--text-2);border:1px solid var(--border-2)}
 .chip.mistake{background:var(--loss-soft);color:#d23663;border-color:#f6cdd9}
 .chip.hi{background:var(--brand-soft);color:var(--brand);border-color:rgba(93,95,239,.28);font-weight:600;cursor:help}
 .hi-item{padding:10px 4px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:6px;transition:background .12s}
@@ -185,16 +188,18 @@ label.fl{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;fon
 .stars .off{color:#dde0ec}
 
 /* ───── tables ───── */
-table.tbl{width:100%;border-collapse:collapse}
+table.tbl{width:100%;border-collapse:separate;border-spacing:0}
 .tbl th{
-  text-align:left;font-size:.74rem;color:var(--muted);font-weight:600;letter-spacing:.04em;
-  padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;
-  position:sticky;top:0;background:var(--panel);z-index:2;
+  text-align:left;font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.05em;
+  padding:11px 12px;border-bottom:1px solid var(--border-2);white-space:nowrap;cursor:pointer;user-select:none;
+  position:sticky;top:0;background:var(--panel-2);z-index:2;transition:color .12s;
 }
-.tbl th .arrow{font-size:.65rem;margin-left:3px;opacity:.8}
-.tbl td{padding:9px 12px;border-bottom:1px solid var(--border);font-size:.87rem;white-space:nowrap}
-.tbl tbody tr{cursor:pointer;transition:background .1s}
-.tbl tbody tr:hover{background:#f8f9fd}
+.tbl th:hover{color:var(--text-2)}
+.tbl th .arrow{font-size:.65rem;margin-left:3px;color:var(--brand);opacity:1}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:.87rem;white-space:nowrap}
+.tbl tbody tr{cursor:pointer;transition:background .12s,box-shadow .12s}
+.tbl tbody tr:hover{background:var(--brand-soft)}
+.tbl tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
 .tbl tbody tr:last-child td{border-bottom:none}
 .tbl .num{font-size:.85rem}
 
@@ -391,7 +396,7 @@ table.tbl{width:100%;border-collapse:collapse}
       <div class="nav-label">系統</div>
       <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
     </nav>
-    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v19</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
+    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v21</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
   </aside>
 
   <!-- ───────── main ───────── -->
@@ -678,7 +683,7 @@ const OLD_DEFAULT_SETUPS=['開盤突破','回測均線','區間假突破','順�
 /* 交易時框選項（單選）*/
 const TIMEFRAMES=['30s','1m','2m','3m','5m'];
 /* 流動性時框選項（可複選）*/
-const LIQ_TF=['5m','15m','30m','1h','session liquidity'];
+const LIQ_TF=['5m FVG','15m FVG','15m ITH','15m ITL','30m FVG','30m ITH','30m ITL','1h FVG','1h ITH','1h ITL','session liquidity'];
 let DB=null, memStore=null;
 /* ── IndexedDB 儲存層（容量遠大於 localStorage ~5MB，手機/桌面瀏覽器皆支援，圖片放得下）── */
 const IDB_DB='edgebook', IDB_STORE='kv', IDB_REC='db';
@@ -881,7 +886,7 @@ function renderSyncStatus(){
   const t=SYNC.last?new Date(SYNC.last).toLocaleString('zh-TW',{hour12:false}):'尚未同步';
   let sizeMB=0;try{sizeMB=JSON.stringify(DB).length/1048576;}catch(e){}
   const sizeStr=sizeMB?' · 資料量 '+sizeMB.toFixed(2)+' MB'+(sizeMB>8?'（偏大，可能導致同步失敗，建議精簡圖片）':''):'';
-  elS.innerHTML='App 版本 v19 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
+  elS.innerHTML='App 版本 v21 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
     (lastSyncErr?'<br><span style="color:var(--loss);font-weight:600">⚠ '+esc(lastSyncErr)+'</span>':'')+
     '<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
 }
@@ -1027,7 +1032,7 @@ function genDemo(){
         symbol:sym, side, qty, entry, exit, stop, fees:Math.round(fees*100)/100,
         setup:setups[Math.floor(rnd()*setups.length)],
         tf:TIMEFRAMES[Math.floor(rnd()*TIMEFRAMES.length)],
-        liq:LIQ_TF.filter(()=>rnd()<0.4),
+        liq:LIQ_TF.filter(()=>rnd()<0.16),
         emotion:win?(rnd()<0.6?'冷靜':'自信'):(rnd()<0.5?'焦慮':'猶豫'),
         rating:win?(3+Math.floor(rnd()*3)):(1+Math.floor(rnd()*3)),
         mistakes:[...new Set(ms)],
@@ -1316,13 +1321,14 @@ function filteredTrades(){
 }
 function renderTrades(){
   const tt=filteredTrades();
-  const cols=[['datetime','日期 / 時間'],['symbol','商品'],['side','方向'],['tf','時框'],['qty','口數'],['entry','進場'],['exit','出場'],['pts','點數'],['pnl','淨損益'],['r','R 倍數'],['mins','持倉'],['setup','策略'],['rating','評分']];
+  const cols=[['datetime','日期 / 時間'],['symbol','商品'],['side','方向'],['tf','時框'],['liq','流動性'],['qty','口數'],['entry','進場'],['exit','出場'],['pts','點數'],['pnl','淨損益'],['r','R 倍數'],['mins','持倉'],['setup','策略'],['rating','評分']];
   const head='<thead><tr>'+cols.map(c=>'<th data-k="'+c[0]+'">'+c[1]+(sortKey===c[0]?'<span class="arrow">'+(sortDir>0?'▲':'▼')+'</span>':'')+'</th>').join('')+'</tr></thead>';
   const body='<tbody>'+(tt.length?tt.map(t=>
     '<tr data-id="'+t.id+'"><td class="num">'+t.date+' <span class="neutral">'+(t.timeIn||'')+'</span></td>'+
     '<td><span class="badge sym">'+esc(t.symbol)+'</span></td>'+
     '<td><span class="badge '+t.side+'">'+(t.side==='long'?'多':'空')+'</span></td>'+
-    '<td style="white-space:nowrap">'+(t.tf?'<span class="badge tf">'+esc(t.tf)+'</span>':'<span class="neutral">—</span>')+(t.liq&&t.liq.length?' '+t.liq.map(l=>'<span class="badge liq">'+esc(l)+'</span>').join(' '):'')+'</td>'+
+    '<td>'+(t.tf?'<span class="badge tf">'+esc(t.tf)+'</span>':'<span class="neutral">—</span>')+'</td>'+
+    '<td><div class="liq-cell">'+(t.liq&&t.liq.length?t.liq.map(l=>'<span class="badge liq">'+esc(l)+'</span>').join(''):'<span class="neutral">—</span>')+'</div></td>'+
     '<td class="num">'+t.qty+'</td><td class="num">'+fmtN(t.entry)+'</td><td class="num">'+fmtN(t.exit)+'</td>'+
     '<td class="num '+cls(t.pts)+'">'+(t.pts>0?'+':'')+fmtN(t.pts)+'</td>'+
     '<td class="num '+cls(t.pnl)+'" style="font-weight:600">'+fmt$(t.pnl,true)+'</td>'+
@@ -1330,7 +1336,7 @@ function renderTrades(){
     '<td class="num neutral">'+(t.mins!=null?t.mins+'分':'—')+'</td>'+
     '<td><span class="chip">'+esc(t.setup||'—')+'</span>'+(t.highlight?' <span class="chip hi" title="'+esc(t.highlight)+'">重點</span>':'')+((t.mistakes||[]).length?' <span class="chip mistake">'+t.mistakes.length+' 錯誤</span>':'')+'</td>'+
     '<td><span class="stars">'+'★'.repeat(t.rating||0)+'<span class="off">'+'★'.repeat(5-(t.rating||0))+'</span></span></td></tr>').join('')
-    :'<tr><td colspan="13"><div class="empty"><div class="big">◎</div>沒有符合條件的交易</div></td></tr>')+'</tbody>';
+    :'<tr><td colspan="14"><div class="empty"><div class="big">◎</div>沒有符合條件的交易</div></td></tr>')+'</tbody>';
   el('tradesTbl').innerHTML=head+body;
   el('tradesTbl').querySelectorAll('th').forEach(th=>th.addEventListener('click',()=>{
     const k=th.dataset.k; if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=-1;} renderTrades();
