@@ -396,7 +396,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
       <div class="nav-label">系統</div>
       <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
     </nav>
-    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v21</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
+    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v22</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
   </aside>
 
   <!-- ───────── main ───────── -->
@@ -539,6 +539,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
             <span class="muted-sm" style="line-height:1.6">為每一種策略寫下你的劇本：進場條件、確認訊號、停損與目標、無效化情境。交易表單裡的「策略」選項即來自這裡的清單。</span>
           </div>
         </div>
+        <div id="pbKeyWrap" style="margin-bottom:16px"></div>
         <div id="pbGrid" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:start;gap:16px"></div>
       </section>
 
@@ -886,7 +887,7 @@ function renderSyncStatus(){
   const t=SYNC.last?new Date(SYNC.last).toLocaleString('zh-TW',{hour12:false}):'尚未同步';
   let sizeMB=0;try{sizeMB=JSON.stringify(DB).length/1048576;}catch(e){}
   const sizeStr=sizeMB?' · 資料量 '+sizeMB.toFixed(2)+' MB'+(sizeMB>8?'（偏大，可能導致同步失敗，建議精簡圖片）':''):'';
-  elS.innerHTML='App 版本 v21 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
+  elS.innerHTML='App 版本 v22 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
     (lastSyncErr?'<br><span style="color:var(--loss);font-weight:600">⚠ '+esc(lastSyncErr)+'</span>':'')+
     '<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
 }
@@ -1563,7 +1564,39 @@ function pbCommit(i){
   e.strategy=strategy;e.text=ta.value.trim();e.updatedAt=Date.now();
   return e;
 }
+/* 「做單重點」：獨立於各策略的全域重點，存為保留 id 的劇本項目，照樣跟著逐筆同步 */
+const PB_KEY_ID='pb:__key__';
+function pbKeyGet(){return (DB.playbook||[]).find(p=>p.id===PB_KEY_ID);}
+function pbKeyCommit(){
+  let e=pbKeyGet();
+  if(!e){e={id:PB_KEY_ID,strategy:'__key__',text:'',images:[],updatedAt:Date.now()};DB.playbook.push(e);}
+  const ta=el('pbKeyText');if(ta)e.text=ta.value.trim();
+  e.updatedAt=Date.now();return e;
+}
+function renderKeyPlaybook(){
+  const e=pbKeyGet(),imgs=(e&&Array.isArray(e.images))?e.images:[];
+  const when=e&&e.updatedAt&&e.updatedAt>1?new Date(e.updatedAt).toLocaleString('zh-TW',{hour12:false}):'尚未編輯';
+  const thumbs=imgs.map((src,idx)=>
+    '<div class="img-thumb"><img src="'+src+'" onclick="App.pbKeyLightbox('+idx+')" alt="做單重點圖 '+(idx+1)+'"><button type="button" class="rm" title="移除" onclick="App.pbKeyRemoveImage('+idx+')">✕</button></div>'
+  ).join('');
+  el('pbKeyWrap').innerHTML='<div class="panel">'+
+    '<div class="panel-head"><span class="badge" style="background:var(--brand-soft);color:var(--brand)">做單重點</span><span class="panel-title" style="font-size:.92rem">下單前必看</span><span class="panel-hint" style="margin-left:auto">重要條件、情況、提醒</span></div>'+
+    '<div class="panel-body">'+
+      '<textarea id="pbKeyText" rows="6" placeholder="寫下你做單時最重要的條件、情況與提醒…例如：只在 DOL 對齊時進場、SMT 必須成立、避開數據前後、連虧兩筆即收手…">'+esc(e?e.text:'')+'</textarea>'+
+      '<label class="fl" style="margin-top:12px">圖示（選填）</label>'+
+      '<div class="img-thumbs">'+thumbs+'</div>'+
+      '<label class="img-drop" style="margin-top:8px;display:block">'+
+        '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>點擊上傳圖片（可多張）'+
+        '<input type="file" accept="image/*" multiple style="display:none" onchange="App.pbKeyAddImages(this.files);this.value=\'\'">'+
+      '</label>'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-top:12px">'+
+        '<button class="btn primary" onclick="App.saveKeyPlaybook()">儲存做單重點</button>'+
+        '<span class="muted-sm">上次更新：'+esc(when)+'</span>'+
+      '</div>'+
+    '</div></div>';
+}
 function renderPlaybook(){
+  renderKeyPlaybook();
   const setups=DB.settings.setups||[];
   el('pbGrid').innerHTML=setups.map((s,i)=>{
     const e=pbGet(s);
@@ -1654,6 +1687,17 @@ const App={
     e.images.splice(idx,1);e.updatedAt=Date.now();saveDB();renderPlaybook();
   },
   pbLightbox(i,idx){const ta=el('pbText'+i);if(!ta)return;const e=pbGet(ta.dataset.strategy);if(e&&Array.isArray(e.images))openLightbox(e.images,idx);},
+  saveKeyPlaybook(){pbKeyCommit();saveDB();renderPlaybook();toast('已儲存做單重點');},
+  async pbKeyAddImages(files){
+    const e=pbKeyCommit();
+    const imgs=[...files].filter(f=>f&&f.type&&f.type.indexOf('image/')===0);
+    if(!imgs.length)return;
+    if(!Array.isArray(e.images))e.images=[];
+    for(const f of imgs){try{const d=await fileToCompressedDataURL(f);if(d)e.images.push(d);}catch(err){toast('讀取圖片失敗','err');}}
+    e.updatedAt=Date.now();saveDB();renderPlaybook();toast('已加入 '+imgs.length+' 張圖片');
+  },
+  pbKeyRemoveImage(idx){const e=pbKeyCommit();if(!e||!Array.isArray(e.images))return;e.images.splice(idx,1);e.updatedAt=Date.now();saveDB();renderPlaybook();},
+  pbKeyLightbox(idx){const e=pbKeyGet();if(e&&Array.isArray(e.images))openLightbox(e.images,idx);},
   clearDemo(){if(!confirm('清除全部範例交易與日誌?'))return;DB.trades=[];DB.journal=[];DB.demo=false;DB.updatedAt=0;saveDB(true);refreshAll();toast('已清除範例資料,開始記錄你的第一筆交易吧');},
   relinkSync(){if(!SYNC.token)return toast('請先填入 GitHub Token','err');SYNC.gistId='';saveSync();renderSyncStatus();toast('正在重新尋找雲端空間…');syncPull(false);},
   goHighlights(){['fFrom','fTo','fSym','fSide','fSetup','fTf','fResult','fSearch'].forEach(id=>{const e=el(id);if(e)e.value='';});el('fLiq').querySelectorAll('.lqchip').forEach(c=>c.classList.remove('on'));const h=el('fHi');if(h)h.value='has';App.go('trades');}
