@@ -413,7 +413,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
       <div class="nav-label">系統</div>
       <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
     </nav>
-    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v27</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
+    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v28</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
   </aside>
 
   <!-- ───────── main ───────── -->
@@ -666,11 +666,13 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
 /* ═════════════════════ 資料層 ═════════════════════ */
 const LS_KEY='edgebook.v1';
 const DEFAULTS={
-  setups:['Reversal','Continuation'],
+  setups:['Mech','CR'],
   mistakes:['追單','凹單','過早出場','過度重倉','無計畫進場','亂移停損','報復性交易','過度交易']
 };
-/* 舊版預設策略清單；偵測到使用者沿用舊預設（未自訂）時，自動遷移為 Reversal / Continuation */
+/* 舊版預設策略清單；偵測到使用者沿用舊預設（未自訂）時，自動遷移為 Mech / CR */
 const OLD_DEFAULT_SETUPS=['開盤突破','回測均線','區間假突破','順勢回調','VWAP 反彈','尾盤動能','數據行情','逆勢接刀','其他'];
+/* v28 策略更名：Continuation→Mech、Reversal→CR（清單、既有交易、策略劇本一次遷移）*/
+const SETUP_RENAME={'Continuation':'Mech','Reversal':'CR'};
 /* 交易時框選項（單選）*/
 const TIMEFRAMES=['30s','1m','2m','3m','5m'];
 /* 流動性時框選項（可複選）*/
@@ -703,6 +705,12 @@ function applyDefaults(){
   if(!DB.settings.mistakes)DB.settings.mistakes=DEFAULTS.mistakes.slice();
   if(!Array.isArray(DB.playbook))DB.playbook=[];
   normalizeStamps(DB);
+  /* 策略更名遷移：清單、交易、劇本（舊劇本 id 立墓碑，換新 id 以正確跨裝置收斂）*/
+  let renamed=false;
+  DB.settings.setups=DB.settings.setups.map(x=>{if(SETUP_RENAME[x]){renamed=true;return SETUP_RENAME[x];}return x;});
+  if(renamed)DB.settingsAt=Date.now();
+  DB.trades.forEach(t=>{if(SETUP_RENAME[t.setup]){t.setup=SETUP_RENAME[t.setup];t.updatedAt=Date.now();}});
+  DB.playbook.forEach(p=>{if(SETUP_RENAME[p.strategy]){tombstone('playbook',p.id);p.strategy=SETUP_RENAME[p.strategy];p.id='pb:'+p.strategy;p.updatedAt=Date.now();}});
 }
 /* ═════════════════════ 跨裝置合併（逐筆 last-writer-wins + 刪除墓碑）═════════════════════ */
 /* 取一筆記錄的更新時間；舊資料無 updatedAt 時退回用交易日期，再退回 1（視為很舊）*/
@@ -879,7 +887,7 @@ function renderSyncStatus(){
   const t=SYNC.last?new Date(SYNC.last).toLocaleString('zh-TW',{hour12:false}):'尚未同步';
   let sizeMB=0;try{sizeMB=JSON.stringify(DB).length/1048576;}catch(e){}
   const sizeStr=sizeMB?' · 資料量 '+sizeMB.toFixed(2)+' MB'+(sizeMB>8?'（偏大，可能導致同步失敗，建議精簡圖片）':''):'';
-  elS.innerHTML='App 版本 v27 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
+  elS.innerHTML='App 版本 v28 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
     (lastSyncErr?'<br><span style="color:var(--loss);font-weight:600">⚠ '+esc(lastSyncErr)+'</span>':'')+
     '<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
 }
@@ -1423,7 +1431,7 @@ function saveJournal(){
 }
 
 /* ═════════════════════ 策略區 Playbook ═════════════════════ */
-const PB_HINTS={Reversal:'反轉 · 逆勢轉折',Continuation:'順勢 · 回調續勢'};
+const PB_HINTS={Mech:'機械化執行',CR:'Candle Range'};
 function pbGet(strategy){return (DB.playbook||[]).find(p=>p.id==='pb:'+strategy);}
 /* 取得（或建立）某卡片對應的劇本，並把目前文字框內容一併寫入，避免上傳/移除圖片時遺失尚未按儲存的文字 */
 function pbCommit(i){
@@ -1496,18 +1504,21 @@ function renderPlaybook(){
 /* ═════════════════════ 圖庫 ═════════════════════ */
 let galList=[];
 function renderGallery(){
+  const resBadge=t=>{const r=resOf(t);return r==='win'?'<span class="badge long">'+esc(t.rr||'WIN')+'</span>':r==='loss'?'<span class="badge short">Loss</span>':'<span class="badge tf">BE</span>';};
   const items=[];
   DB.trades.slice().sort((a,b)=>b.date.localeCompare(a.date)).forEach(t=>{
-    (t.images||[]).forEach(src=>items.push({src,cap:t.date+' · '+(t.setup||'—')}));
+    const cap=resBadge(t)+'<span class="chip">'+esc(t.setup||'—')+'</span>'+(t.model?'<span class="badge tf">'+esc(t.model)+'</span>':'')+
+      '<span class="num" style="margin-left:auto;color:var(--faint)">'+esc(t.date.slice(5))+'</span>';
+    (t.images||[]).forEach(src=>items.push({src,cap,alt:t.date+' '+(t.setup||'')}));
   });
   (DB.playbook||[]).forEach(p=>{
-    if(p.id===PB_KEY_ID){(p.images||[]).forEach(src=>items.push({src,cap:'做單重點'}));}
-    else{(p.images||[]).forEach(src=>items.push({src,cap:'策略區 · '+(p.strategy||'')}));}
+    if(p.id===PB_KEY_ID){(p.images||[]).forEach(src=>items.push({src,cap:'<span class="chip hi">做單重點</span>',alt:'做單重點'}));}
+    else{(p.images||[]).forEach(src=>items.push({src,cap:'<span class="chip">策略區 · '+esc(p.strategy||'')+'</span>',alt:'策略區'}));}
   });
   galList=items.map(i=>i.src);
   el('galInfo').textContent='共 '+items.length+' 張圖片';
   el('galGrid').innerHTML=items.length?items.map((it,i)=>
-    '<div class="gal-item" onclick="App.galOpen('+i+')"><img src="'+it.src+'" alt="'+esc(it.cap)+'"><div class="gal-cap">'+esc(it.cap)+'</div></div>'
+    '<div class="gal-item" onclick="App.galOpen('+i+')"><img src="'+it.src+'" alt="'+esc(it.alt)+'"><div class="gal-cap" style="flex-wrap:wrap">'+it.cap+'</div></div>'
   ).join(''):'<div class="empty"><div class="big">🖼</div>還沒有圖片,新增交易時上傳截圖就會出現在這裡</div>';
 }
 /* ═════════════════════ 設定 / 匯出入 ═════════════════════ */
