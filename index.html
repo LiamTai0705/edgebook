@@ -189,6 +189,21 @@ label.fl{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;fon
 .chip{display:inline-flex;align-items:center;padding:2.5px 8px;border-radius:7px;font-size:.74rem;font-weight:500;background:var(--panel-3);color:var(--text-2);border:1px solid var(--border-2)}
 .chip.mistake{background:var(--loss-soft);color:#d23663;border-color:#f6cdd9}
 .chip.hi{background:var(--brand-soft);color:var(--brand);border-color:rgba(93,95,239,.28);font-weight:600;cursor:help}
+/* 下單前必看檢核清單 */
+.ck-item{display:flex;gap:11px;align-items:flex-start;padding:12px 14px;border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:9px;cursor:pointer;transition:border-color .13s,background .13s;background:var(--panel)}
+.ck-item:hover{border-color:#c6cbdd}
+.ck-item.on{border-color:rgba(15,174,132,.45);background:rgba(15,174,132,.05)}
+.ck-circle{width:22px;height:22px;border-radius:50%;border:2px solid var(--border-2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;font-weight:700;line-height:1;font-family:var(--font-num);transition:all .13s}
+.ck-item.on .ck-circle{background:var(--win);border-color:var(--win);color:#fff}
+.ck-t{font-weight:600;font-size:.9rem}
+.ck-d{font-size:.79rem;color:var(--muted);margin-top:2px;line-height:1.5}
+.ck-q{font-size:.76rem;color:var(--faint);font-style:italic;margin-top:2px}
+/* 策略劇本大圖 */
+.pb-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:8px}
+.pb-thumb{position:relative;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--panel-3)}
+.pb-thumb img{width:100%;height:180px;object-fit:cover;display:block;cursor:zoom-in}
+.pb-thumb .rm{position:absolute;top:6px;right:6px;width:22px;height:22px;border:none;border-radius:50%;background:rgba(20,22,45,.72);color:#fff;font-size:13px;line-height:22px;text-align:center;cursor:pointer;padding:0}
+.pb-thumb .rm:hover{background:var(--loss)}
 .hi-item{padding:10px 4px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:6px;transition:background .12s}
 .hi-item:last-child{border-bottom:none}
 .hi-item:hover{background:var(--panel-2)}
@@ -261,6 +276,9 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
 .form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .form-grid .c2{grid-column:span 2}.form-grid .c4{grid-column:span 4}
 .form-grid input,.form-grid select{width:100%}
+/* chip 內的 checkbox 不可吃到上面的 width:100%（iOS Safari 會整顆撐開導致跑版）*/
+.form-grid .chip{flex:0 0 auto;white-space:nowrap}
+.form-grid .chip input[type=checkbox]{width:15px;height:15px;flex:none;padding:0}
 .calc-strip{
   display:flex;gap:22px;background:var(--panel-2);border:1px solid var(--border);border-radius:var(--r-sm);
   padding:10px 16px;margin-top:14px;flex-wrap:wrap;
@@ -413,7 +431,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
       <div class="nav-label">系統</div>
       <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
     </nav>
-    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v28</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
+    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v29</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
   </aside>
 
   <!-- ───────── main ───────── -->
@@ -705,12 +723,21 @@ function applyDefaults(){
   if(!DB.settings.mistakes)DB.settings.mistakes=DEFAULTS.mistakes.slice();
   if(!Array.isArray(DB.playbook))DB.playbook=[];
   normalizeStamps(DB);
-  /* 策略更名遷移：清單、交易、劇本（舊劇本 id 立墓碑，換新 id 以正確跨裝置收斂）*/
+  migrateSetups(DB);
+}
+/* 策略更名遷移（清單、交易、劇本；舊劇本 id 立墓碑換新 id）。
+   除本機載入外，雲端下載/合併後也必須跑：另一台若還在跑舊版，會持續推回舊名且時間戳較新，
+   不在合併路徑遷移就會被蓋回去 */
+function migrateSetups(db){
+  if(!db)return;
+  normalizeStamps(db);
   let renamed=false;
-  DB.settings.setups=DB.settings.setups.map(x=>{if(SETUP_RENAME[x]){renamed=true;return SETUP_RENAME[x];}return x;});
-  if(renamed)DB.settingsAt=Date.now();
-  DB.trades.forEach(t=>{if(SETUP_RENAME[t.setup]){t.setup=SETUP_RENAME[t.setup];t.updatedAt=Date.now();}});
-  DB.playbook.forEach(p=>{if(SETUP_RENAME[p.strategy]){tombstone('playbook',p.id);p.strategy=SETUP_RENAME[p.strategy];p.id='pb:'+p.strategy;p.updatedAt=Date.now();}});
+  db.settings.setups=(db.settings.setups||[]).map(x=>{if(SETUP_RENAME[x]){renamed=true;return SETUP_RENAME[x];}return x;});
+  if(renamed)db.settingsAt=Date.now();
+  (db.trades||[]).forEach(t=>{if(SETUP_RENAME[t.setup]){t.setup=SETUP_RENAME[t.setup];t.updatedAt=Date.now();}});
+  (db.playbook||[]).forEach(p=>{
+    if(SETUP_RENAME[p.strategy]){db.tomb.playbook[p.id]=Date.now();p.strategy=SETUP_RENAME[p.strategy];p.id='pb:'+p.strategy;p.updatedAt=Date.now();}
+  });
 }
 /* ═════════════════════ 跨裝置合併（逐筆 last-writer-wins + 刪除墓碑）═════════════════════ */
 /* 取一筆記錄的更新時間；舊資料無 updatedAt 時退回用交易日期，再退回 1（視為很舊）*/
@@ -762,6 +789,7 @@ function mergeRemote(remote){
   if((remote.settingsAt||0)>(DB.settingsAt||0)){DB.settings=remote.settings;DB.settingsAt=remote.settingsAt;}
   if(remote.demo===false)DB.demo=false;
   DB.updatedAt=Math.max(DB.updatedAt||0,remote.updatedAt||0);
+  migrateSetups(DB); /* 合併可能帶回舊策略名（對方裝置仍跑舊版），這裡再遷移一次 */
   const after=JSON.stringify({t:DB.trades,j:DB.journal,p:DB.playbook,s:DB.settings,tb:DB.tomb,sa:DB.settingsAt});
   return before!==after;
 }
@@ -863,7 +891,7 @@ async function syncPull(silent){
     if(remote===null){if(!silent)toast('雲端還沒有資料,請先在另一台裝置上傳','err');return;}
     if(DB.demo){
       if(remote.demo===true){if(!silent)toast('雲端也還沒有正式資料','err');}
-      else{DB=remote;normalizeStamps(DB);saveDB(true);refreshAll();toast(silent?'已自動同步雲端資料':'已從雲端更新('+remote.trades.length+' 筆交易)');}
+      else{DB=remote;normalizeStamps(DB);migrateSetups(DB);saveDB(true);refreshAll();toast(silent?'已自動同步雲端資料':'已從雲端更新('+remote.trades.length+' 筆交易)');}
     }else if(remote.demo===true){
       if(SYNC.auto)syncPush(true);            /* 本機是正式資料、雲端還是範例 → 上傳覆蓋 */
       if(!silent)toast('已改為上傳本機資料');
@@ -887,7 +915,7 @@ function renderSyncStatus(){
   const t=SYNC.last?new Date(SYNC.last).toLocaleString('zh-TW',{hour12:false}):'尚未同步';
   let sizeMB=0;try{sizeMB=JSON.stringify(DB).length/1048576;}catch(e){}
   const sizeStr=sizeMB?' · 資料量 '+sizeMB.toFixed(2)+' MB'+(sizeMB>8?'（偏大，可能導致同步失敗，建議精簡圖片）':''):'';
-  elS.innerHTML='App 版本 v28 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
+  elS.innerHTML='App 版本 v29 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
     (lastSyncErr?'<br><span style="color:var(--loss);font-weight:600">⚠ '+esc(lastSyncErr)+'</span>':'')+
     '<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
 }
@@ -1234,7 +1262,7 @@ function filteredTrades(){
 }
 function renderTrades(){
   const tt=filteredTrades();
-  const cols=[['datetime','日期'],['setup','策略'],['model','進場模型'],['liq','流動性'],['highlight','重點'],['hitext','重點內容'],['result','結果']];
+  const cols=[['datetime','日期'],['setup','策略'],['model','進場模型'],['liq','流動性'],['highlight','重點'],['hitext','重點內容'],['rr','RR'],['result','結果']];
   const head='<thead><tr>'+cols.map(c=>'<th data-k="'+c[0]+'">'+c[1]+(sortKey===c[0]?'<span class="arrow">'+(sortDir>0?'▲':'▼')+'</span>':'')+'</th>').join('')+'</tr></thead>';
   const body='<tbody>'+(tt.length?tt.map(t=>{
     const r=resOf(t);
@@ -1244,9 +1272,10 @@ function renderTrades(){
     '<td><div class="liq-cell">'+(t.liq&&t.liq.length?t.liq.map(l=>'<span class="badge liq">'+esc(l)+'</span>').join(''):'<span class="neutral">—</span>')+'</div></td>'+
     '<td>'+(t.highlight?'<span class="chip hi">Yes</span>':'<span class="neutral">No</span>')+'</td>'+
     '<td style="max-width:260px;white-space:normal">'+esc(t.highlight||'')+'</td>'+
-    '<td>'+(r==='win'?'<span class="badge long">'+esc(t.rr||'WIN')+'</span>':r==='loss'?'<span class="badge short">Loss</span>':'<span class="badge tf">BE</span>')+'</td></tr>';
+    '<td class="num">'+esc(t.rr||'—')+'</td>'+
+    '<td>'+(r==='win'?'<span class="badge long">WIN</span>':r==='loss'?'<span class="badge short">Loss</span>':'<span class="badge tf">BE</span>')+'</td></tr>';
   }).join('')
-    :'<tr><td colspan="7"><div class="empty"><div class="big">◎</div>沒有符合條件的交易</div></td></tr>')+'</tbody>';
+    :'<tr><td colspan="8"><div class="empty"><div class="big">◎</div>沒有符合條件的交易</div></td></tr>')+'</tbody>';
   el('tradesTbl').innerHTML=head+body;
   el('tradesTbl').querySelectorAll('th').forEach(th=>th.addEventListener('click',()=>{
     const k=th.dataset.k; if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=-1;} renderTrades();
