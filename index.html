@@ -46,7 +46,7 @@
   --amber-soft:#fdf3e0;
   --blue:#3b82f6;
   --side-bg:#26245f;
-  --r-sm:8px; --r-md:12px; --r-lg:16px;
+  --r-sm:10px; --r-md:13px; --r-lg:16px;
   --font-num:'Inter','Noto Sans TC',sans-serif;
   --shadow-card:0 1px 2px rgba(23,25,60,.04),0 8px 20px -12px rgba(23,25,60,.14);
   --shadow-lg:0 24px 64px rgba(23,25,60,.22);
@@ -140,8 +140,8 @@ input[type=date],input[type=time]{color-scheme:light;-webkit-appearance:none;app
 input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value{text-align:left}
 textarea{resize:vertical;min-height:72px;line-height:1.55}
 label.fl{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;font-weight:600;letter-spacing:.02em}
-.seg{display:inline-flex;background:var(--panel-3);border:1px solid var(--border-2);border-radius:var(--r-sm);padding:2px;gap:2px}
-.seg button{border:none;background:transparent;color:var(--muted);padding:5px 12px;border-radius:6px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .13s}
+.seg{display:inline-flex;background:var(--panel-3);border:1px solid var(--border);border-radius:11px;padding:3px;gap:3px}
+.seg button{border:none;background:transparent;color:var(--muted);padding:6px 13px;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .13s}
 .seg button:active{transform:translateY(.5px)}
 .seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(23,25,60,.12)}
 .seg.side-seg button.on.long{background:var(--win-soft);color:var(--win)}
@@ -149,10 +149,10 @@ label.fl{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;fon
 
 /* ───── panels / cards ───── */
 .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card)}
-.panel-head{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border)}
-.panel-title{font-size:.92rem;font-weight:700}
+.panel-head{display:flex;align-items:center;gap:10px;padding:15px 18px 7px;border-bottom:none}
+.panel-title{font-size:.95rem;font-weight:700;letter-spacing:-.01em}
 .panel-hint{font-size:.76rem;color:var(--faint)}
-.panel-body{padding:14px 16px}
+.panel-body{padding:10px 18px 16px}
 .grid{display:grid;gap:14px}
 .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin-bottom:14px}
 .kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px 13px;position:relative;overflow:hidden;box-shadow:var(--shadow-card);transition:transform .14s cubic-bezier(.4,0,.2,1),box-shadow .14s}
@@ -200,6 +200,10 @@ label.fl{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;fon
 .ck-t{font-weight:600;font-size:.9rem}
 .ck-d{font-size:.79rem;color:var(--muted);margin-top:2px;line-height:1.5}
 .ck-q{font-size:.76rem;color:var(--faint);font-style:italic;margin-top:2px}
+.ck-del{border:none;background:none;color:var(--faint);font-size:.85rem;cursor:pointer;padding:2px 6px;border-radius:6px;opacity:0;transition:opacity .12s,color .12s;flex-shrink:0}
+.ck-item:hover .ck-del{opacity:1}
+.ck-del:hover{color:var(--loss);background:var(--loss-soft)}
+@media(hover:none){.ck-del{opacity:.55}} /* 觸控裝置沒有 hover，直接顯示 */
 /* 策略劇本大圖 */
 .pb-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:8px}
 .pb-thumb{position:relative;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--panel-3)}
@@ -265,7 +269,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
 .overlay.open{display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .modal{
-  background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);
+  background:#fff;border:1px solid var(--border);border-radius:18px;
   width:680px;max-width:100%;box-shadow:var(--shadow-lg);animation:pop .18s ease;margin:auto 0;
 }
 @keyframes pop{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
@@ -436,7 +440,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
       <div class="nav-label">系統</div>
       <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
     </nav>
-    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v30</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
+    <div class="sidebar-foot">資料儲存於本機瀏覽器 · <span class="num">v32</span><br><span id="footCount" class="num"></span><br><span id="footSync"></span></div>
   </aside>
 
   <!-- ───────── main ───────── -->
@@ -556,7 +560,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
                 <option>冷靜專注</option><option>自信</option><option>猶豫不決</option><option>焦慮</option><option>過度興奮</option><option>疲勞</option><option>FOMO</option><option>挫折</option>
               </select>
               <label class="fl">盤前計畫 / 盤後檢討</label>
-              <textarea id="jText" rows="8" placeholder="今日關鍵價位、計畫、執行檢討、改進事項…"></textarea>
+              <textarea id="jText" rows="8" placeholder=""></textarea>
               <button class="btn primary" style="width:100%;margin-top:12px" id="jSave">儲存日誌</button>
             </div>
           </div>
@@ -566,13 +570,8 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
 
       <!-- ════ playbook 策略區 ════ -->
       <section class="view" id="view-playbook">
-        <div class="panel" style="margin-bottom:16px">
-          <div class="panel-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <span class="muted-sm" style="line-height:1.6">為每一種策略寫下你的劇本：進場條件、確認訊號、停損與目標、無效化情境。交易表單裡的「策略」選項即來自這裡的清單。</span>
-          </div>
-        </div>
         <div id="pbKeyWrap" style="margin-bottom:16px"></div>
-        <div id="pbGrid" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:start;gap:16px"></div>
+        <div id="pbGrid" class="grid" style="grid-template-columns:1fr;align-items:start;gap:16px"></div>
       </section>
 
       <!-- ════ gallery ════ -->
@@ -608,7 +607,6 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
               <input type="file" id="importFile" accept=".json" style="display:none">
               <button class="btn" id="loadDemoBtn">載入範例資料</button>
               <button class="btn danger" id="wipeBtn">清除全部資料</button>
-              <div class="muted-sm" style="line-height:1.6;margin-top:4px">所有資料儲存在這台裝置的瀏覽器中（IndexedDB，容量充足、圖片放得下），不會上傳。換裝置或清除瀏覽器資料前請先備份，或開啟下方雲端同步。</div>
             </div>
           </div>
         </div>
@@ -643,7 +641,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0}
         <div class="c2"><label class="fl">策略 Setup</label><select id="tSetup"></select></div>
         <div class="c2"><label class="fl">進場模型</label><select id="tModel"></select></div>
         <div class="c4"><label class="fl">流動性時框（可複選）</label><div id="tLiq" style="display:flex;gap:7px;flex-wrap:wrap"></div></div>
-        <div class="c4"><label class="fl">重點內容（這筆有什麼值得回顧，選填）</label><input type="text" id="tHi" placeholder="例：完美執行計畫 / 關鍵反轉訊號 / 違反紀律的一筆…"></div>
+        <div class="c4"><label class="fl">重點內容</label><input type="text" id="tHi" placeholder=""></div>
         <div class="c4"><label class="fl">圖片（進出場截圖，可多張）</label>
           <div class="img-drop" id="imgDrop" tabindex="0">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -701,7 +699,7 @@ const TIMEFRAMES=['30s','1m','2m','3m','5m'];
 /* 流動性時框選項（可複選）*/
 const LIQ_TF=['5m FVG','15m FVG','15m ITH','15m ITL','30m FVG','30m ITH','30m ITL','1h FVG','1h ITH','1h ITL','8am CR','9am CR'];
 /* 進場模型選項 */
-const ENTRY_MODELS=['IFVG','BB','F+I','M+F','BBL'];
+const ENTRY_MODELS=['IFVG','BB','F+I','M+F','BBL','CISD'];
 let DB=null, memStore=null;
 /* ── IndexedDB 儲存層（容量遠大於 localStorage ~5MB，手機/桌面瀏覽器皆支援，圖片放得下）── */
 const IDB_DB='edgebook', IDB_STORE='kv', IDB_REC='db';
@@ -920,9 +918,8 @@ function renderSyncStatus(){
   const t=SYNC.last?new Date(SYNC.last).toLocaleString('zh-TW',{hour12:false}):'尚未同步';
   let sizeMB=0;try{sizeMB=JSON.stringify(DB).length/1048576;}catch(e){}
   const sizeStr=sizeMB?' · 資料量 '+sizeMB.toFixed(2)+' MB'+(sizeMB>8?'（偏大，可能導致同步失敗，建議精簡圖片）':''):'';
-  elS.innerHTML='App 版本 v30 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
-    (lastSyncErr?'<br><span style="color:var(--loss);font-weight:600">⚠ '+esc(lastSyncErr)+'</span>':'')+
-    '<br>Token 只儲存在這台裝置的瀏覽器中,不會外流。';
+  elS.innerHTML='App 版本 v32 · '+(SYNC.gistId?'已連接 Gist <span class="num">'+esc(SYNC.gistId.slice(0,8))+'…</span> · ':'尚未連接 · ')+'上次同步:'+t+sizeStr+
+    (lastSyncErr?'<br><span style="color:var(--loss);font-weight:600">⚠ '+esc(lastSyncErr)+'</span>':'')+'';
 }
 /* ── helpers ── */
 const el=id=>document.getElementById(id);
@@ -1125,12 +1122,12 @@ function renderDashboard(){
       '</div>'+
       '<div class="hi-text">'+esc(t.highlight)+'</div>'+
     '</div>';}).join('')
-    :'<div class="empty" style="padding:20px 0"><div class="big">📌</div>還沒有標記重點的交易。在交易明細填寫「重點」,值得回顧的那幾筆就會出現在這裡。</div>';
+    :'<div class="empty" style="padding:20px 0"><div class="big">📌</div>還沒有標記重點的交易</div>';
   el('hiList').querySelectorAll('.hi-item').forEach(d=>d.addEventListener('click',()=>openDrawer(d.dataset.id)));
   /* recent trades */
   const recent=s.sorted.slice(-8).reverse();
   el('recentTbl').innerHTML='<thead><tr><th>日期</th><th>策略</th><th>進場模型</th><th>流動性</th><th>重點</th><th>結果</th></tr></thead><tbody>'+
-    (recent.length?recent.map(rowHtml).join(''):'<tr><td colspan="6" class="empty">尚無交易,點右上「新增交易」開始記錄</td></tr>')+'</tbody>';
+    (recent.length?recent.map(rowHtml).join(''):'<tr><td colspan="6" class="empty">尚無交易</td></tr>')+'</tbody>';
   bindRowClicks('recentTbl');
 
   /* 連勝連敗序列 */
@@ -1452,7 +1449,7 @@ function renderJournal(){
     (d?'<span class="j-pnl '+(d.w>d.l?'win':d.l>d.w?'loss':'neutral')+'">'+d.w+'勝 '+d.l+'敗 · '+d.n+'筆</span>':'<span class="j-pnl neutral">當日無交易</span>')+
     '<button class="btn ghost sm" style="margin-left:8px" onclick="App.delJournal(\''+j.id+'\')">刪除</button></div>'+
     '<div class="j-text">'+esc(j.text)+'</div></div>';}).join('')
-    :'<div class="panel"><div class="empty"><div class="big">✎</div>還沒有日誌,從左側開始撰寫第一篇</div></div>';
+    :'<div class="panel"><div class="empty"><div class="big">✎</div>還沒有日誌</div></div>';
 }
 function saveJournal(){
   const date=el('jDate').value,text=el('jText').value.trim();
@@ -1485,26 +1482,47 @@ function pbKeyCommit(){
   const ta=el('pbKeyText');if(ta)e.text=ta.value.trim();
   e.updatedAt=Date.now();return e;
 }
+/* 下單前必看檢核清單：pbKey.text 每行一項（標題|說明|自問，後兩者選填，跨裝置同步）。
+   勾選狀態只在本次瀏覽有效，重新整理即歸零（每次下單前重新逐項確認） */
+let pbkChecked=[];
+function pbKeyItems(){
+  const e=pbKeyGet();
+  return (e&&e.text?e.text.split('\n'):[]).map(l=>l.trim()).filter(Boolean)
+    .map(l=>{const p=l.split('|');return [p[0].trim(),(p[1]||'').trim(),(p[2]||'').trim()];});
+}
 function renderKeyPlaybook(){
   const e=pbKeyGet(),imgs=(e&&Array.isArray(e.images))?e.images:[];
-  const when=e&&e.updatedAt&&e.updatedAt>1?new Date(e.updatedAt).toLocaleString('zh-TW',{hour12:false}):'尚未編輯';
+  const items=pbKeyItems();
+  const onN=items.reduce((a,_,i)=>a+(pbkChecked[i]?1:0),0);
   const thumbs=imgs.map((src,idx)=>
     '<div class="img-thumb"><img src="'+src+'" onclick="App.pbKeyLightbox('+idx+')" alt="做單重點圖 '+(idx+1)+'"><button type="button" class="rm" title="移除" onclick="App.pbKeyRemoveImage('+idx+')">✕</button></div>'
   ).join('');
+  const list=items.length?items.map((it,i)=>
+    '<div class="ck-item '+(pbkChecked[i]?'on':'')+'" onclick="App.pbKeyCheck('+i+')">'+
+      '<div class="ck-circle">'+(pbkChecked[i]?'✓':(i+1))+'</div>'+
+      '<div style="flex:1;min-width:0"><div class="ck-t">'+esc(it[0])+'</div>'+
+        (it[1]?'<div class="ck-d">'+esc(it[1])+'</div>':'')+
+        (it[2]?'<div class="ck-q">'+esc(it[2])+'</div>':'')+'</div>'+
+      '<button type="button" class="ck-del" title="刪除此項" onclick="event.stopPropagation();App.pbKeyDel('+i+')">✕</button>'+
+    '</div>').join('')
+    :'<div class="muted-sm" style="padding:8px 0 12px">還沒有檢核項目</div>';
   el('pbKeyWrap').innerHTML='<div class="panel">'+
-    '<div class="panel-head"><span class="badge" style="background:var(--brand-soft);color:var(--brand)">做單重點</span><span class="panel-title" style="font-size:.92rem">下單前必看</span><span class="panel-hint" style="margin-left:auto">重要條件、情況、提醒</span></div>'+
-    '<div class="panel-body">'+
-      '<textarea id="pbKeyText" rows="6" placeholder="寫下你做單時最重要的條件、情況與提醒…例如：只在 DOL 對齊時進場、SMT 必須成立、避開數據前後、連虧兩筆即收手…">'+esc(e?e.text:'')+'</textarea>'+
-      '<label class="fl" style="margin-top:12px">圖示（選填）</label>'+
+    '<div class="panel-head"><span class="badge" style="background:var(--brand-soft);color:var(--brand)">做單重點</span><span class="panel-title" style="font-size:.92rem">下單前必看</span>'+
+      '<div style="margin-left:auto;display:flex;align-items:center;gap:10px">'+
+        (items.length?'<span class="num" style="font-size:.85rem;font-weight:700;color:'+(onN===items.length?'var(--win)':'var(--muted)')+'">'+onN+' / '+items.length+' 已確認'+(onN===items.length?' ✓':'')+'</span>':'')+
+        (items.length?'<button class="btn ghost sm" onclick="App.pbKeyReset()">重置</button>':'')+
+      '</div></div>'+
+    '<div class="panel-body">'+list+
+      '<div style="display:flex;gap:8px;margin-top:4px">'+
+        '<input type="text" id="pbkNew" style="flex:1" placeholder="新增檢核項…" onkeydown="if(event.key===\'Enter\')App.pbKeyAdd()">'+
+        '<button class="btn" onclick="App.pbKeyAdd()">＋ 新增</button>'+
+      '</div>'+
+      '<label class="fl" style="margin-top:14px">圖示（選填）</label>'+
       '<div class="img-thumbs">'+thumbs+'</div>'+
       '<label class="img-drop" style="margin-top:8px;display:block">'+
         '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>點擊上傳圖片（可多張）'+
         '<input type="file" accept="image/*" multiple style="display:none" onchange="App.pbKeyAddImages(this.files);this.value=\'\'">'+
       '</label>'+
-      '<div style="display:flex;align-items:center;gap:10px;margin-top:12px">'+
-        '<button class="btn primary" onclick="App.saveKeyPlaybook()">儲存做單重點</button>'+
-        '<span class="muted-sm">上次更新：'+esc(when)+'</span>'+
-      '</div>'+
     '</div></div>';
 }
 function renderPlaybook(){
@@ -1516,23 +1534,27 @@ function renderPlaybook(){
     const when=e&&e.updatedAt&&e.updatedAt>1?new Date(e.updatedAt).toLocaleString('zh-TW',{hour12:false}):'尚未編輯';
     const sub=PB_HINTS[s]?'<span class="panel-hint" style="margin-left:auto">'+esc(PB_HINTS[s])+'</span>':'';
     const thumbs=imgs.map((src,idx)=>
-      '<div class="img-thumb"><img src="'+src+'" onclick="App.pbLightbox('+i+','+idx+')" alt="'+esc(s)+' 策略圖 '+(idx+1)+'"><button type="button" class="rm" title="移除" onclick="App.pbRemoveImage('+i+','+idx+')">✕</button></div>'
+      '<div class="pb-thumb"><img src="'+src+'" onclick="App.pbLightbox('+i+','+idx+')" alt="'+esc(s)+' 策略圖 '+(idx+1)+'"><button type="button" class="rm" title="移除" onclick="App.pbRemoveImage('+i+','+idx+')">✕</button></div>'
     ).join('');
     return '<div class="panel">'+
       '<div class="panel-head"><span class="badge sym">'+esc(s)+'</span><span class="panel-title" style="font-size:.92rem">策略劇本</span>'+sub+'</div>'+
-      '<div class="panel-body">'+
-        '<textarea id="pbText'+i+'" data-strategy="'+esc(s)+'" rows="11" placeholder="寫下這個策略的市場環境、進場條件、確認訊號、停損與目標、無效化情境與部位大小…">'+esc(e?e.text:'')+'</textarea>'+
-        '<label class="fl" style="margin-top:12px">策略圖示（截圖、示意圖，讓讀的人更清楚）</label>'+
-        '<div class="img-thumbs">'+thumbs+'</div>'+
-        '<label class="img-drop" style="margin-top:8px;display:block">'+
-          '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>點擊上傳圖片（可多張）'+
-          '<input type="file" accept="image/*" multiple style="display:none" onchange="App.pbAddImages('+i+',this.files);this.value=\'\'">'+
-        '</label>'+
-        '<div style="display:flex;align-items:center;gap:10px;margin-top:12px">'+
-          '<button class="btn primary" onclick="App.savePlaybook('+i+')">儲存劇本</button>'+
-          '<span class="muted-sm">上次更新：'+esc(when)+'</span>'+
+      '<div class="panel-body"><div class="grid" style="grid-template-columns:360px 1fr;align-items:start">'+
+        '<div>'+
+          '<textarea id="pbText'+i+'" data-strategy="'+esc(s)+'" rows="12" placeholder="">'+esc(e?e.text:'')+'</textarea>'+
+          '<div style="display:flex;align-items:center;gap:10px;margin-top:12px">'+
+            '<button class="btn primary" onclick="App.savePlaybook('+i+')">儲存劇本</button>'+
+            '<span class="muted-sm">上次更新：'+esc(when)+'</span>'+
+          '</div>'+
         '</div>'+
-      '</div></div>';
+        '<div>'+
+          '<label class="fl">策略圖示</label>'+
+          '<div class="pb-thumbs">'+thumbs+'</div>'+
+          '<label class="img-drop" style="display:block">'+
+            '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>點擊上傳圖片（可多張）'+
+            '<input type="file" accept="image/*" multiple style="display:none" onchange="App.pbAddImages('+i+',this.files);this.value=\'\'">'+
+          '</label>'+
+        '</div>'+
+      '</div></div></div>';
   }).join('')||'<div class="panel"><div class="empty"><div class="big">📓</div>尚未設定任何策略</div></div>';
 }
 /* ═════════════════════ 圖庫 ═════════════════════ */
@@ -1553,7 +1575,7 @@ function renderGallery(){
   el('galInfo').textContent='共 '+items.length+' 張圖片';
   el('galGrid').innerHTML=items.length?items.map((it,i)=>
     '<div class="gal-item" onclick="App.galOpen('+i+')"><img src="'+it.src+'" alt="'+esc(it.alt)+'"><div class="gal-cap" style="flex-wrap:wrap">'+it.cap+'</div></div>'
-  ).join(''):'<div class="empty"><div class="big">🖼</div>還沒有圖片,新增交易時上傳截圖就會出現在這裡</div>';
+  ).join(''):'<div class="empty"><div class="big">🖼</div>還沒有圖片</div>';
 }
 /* ═════════════════════ 設定 / 匯出入 ═════════════════════ */
 function renderSettings(){
@@ -1606,7 +1628,25 @@ const App={
     e.images.splice(idx,1);e.updatedAt=Date.now();saveDB();renderPlaybook();
   },
   pbLightbox(i,idx){const ta=el('pbText'+i);if(!ta)return;const e=pbGet(ta.dataset.strategy);if(e&&Array.isArray(e.images))openLightbox(e.images,idx);},
-  saveKeyPlaybook(){pbKeyCommit();saveDB();renderPlaybook();toast('已儲存做單重點');},
+  pbKeyCheck(i){pbkChecked[i]=!pbkChecked[i];renderKeyPlaybook();},
+  pbKeyReset(){pbkChecked=[];renderKeyPlaybook();},
+  pbKeyAdd(){
+    const inp=el('pbkNew');if(!inp)return;
+    const v=inp.value.replace(/｜/g,'|').trim();
+    if(!v)return toast('請先輸入檢核項內容','err');
+    const e=pbKeyCommit();
+    e.text=(e.text?e.text+'\n':'')+v;e.updatedAt=Date.now();
+    saveDB();renderKeyPlaybook();
+    const ni=el('pbkNew');if(ni)ni.focus();
+    toast('已新增檢核項');
+  },
+  pbKeyDel(i){
+    const e=pbKeyCommit();if(!e)return;
+    const lines=(e.text||'').split('\n').map(l=>l.trim()).filter(Boolean);
+    lines.splice(i,1);pbkChecked.splice(i,1);
+    e.text=lines.join('\n');e.updatedAt=Date.now();
+    saveDB();renderKeyPlaybook();
+  },
   async pbKeyAddImages(files){
     const e=pbKeyCommit();
     const imgs=[...files].filter(f=>f&&f.type&&f.type.indexOf('image/')===0);
